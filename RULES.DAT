@@ -1,0 +1,10 @@
+rules1 db ""
+db " Welcome to type fight.",13,10,13,10
+db " You are an official type fighter, and your job is quite simple",13,10
+db " You will have 60 seconds to type the words as fast as you can",13,10
+db " a word will appear on the screen, and your job is to type The",13,10
+db " word with no mistakes,the more words you written correctly more points you get",13,10,13,10
+
+rules2 db "                                                      Good Luck"
+
+
