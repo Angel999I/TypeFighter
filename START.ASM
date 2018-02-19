@@ -36,9 +36,8 @@ Exit:
         mov ax, 4C00h
         int 21h
 
-;-------------------------------
-;This block is used for methods
-;-------------------------------
+
+;-------------METHODS---------------
 
 ;------------------------------
 ;PrintMenu - Print the text for of menu (Uses include Intro.dat + int 21h)
@@ -52,7 +51,7 @@ Exit:
 ;------------------------------
 PROC PrintMenu
 
-call ClearScreen
+call ClearScreen ;Clear the screen before printing out the menu
 
 ;Prep for int 10h interupt theat print with color
 ;-----------------------------------------------
@@ -117,7 +116,7 @@ ENDP PrintMenu
 ;Input:
 ;
 ;Output:
-;
+;					Outcomes of menu
 ;Registers:
 ;			AX
 ;------------------------------
@@ -135,6 +134,7 @@ KeyCheckMenuStart:
         mov ah, 0h  ;Int requirement
         int 16h     ;Execute
 
+;Compare the input we got with all four possible keys
 		cmp ah, KEY_PAD_1
 		je KEYPAD1
 
@@ -145,9 +145,11 @@ KeyCheckMenuStart:
 		je KEYPAD3
 
 		dec ah
-		jz Exit
+		jz Exit ;ESC keycode = 0, check if the button is ESC and if yes exit
 
-		jmp KeyCheckMenuStart
+		jmp KeyCheckMenuStart ;If the button is not any of above, redo the process
+
+;Any button action:
 
 KEYPAD1:
 		call ClearScreen
@@ -160,8 +162,6 @@ KEYPAD3:
 		call ClearScreen
 		jmp Exit
 
-
-KeyCheckMenuExit:
         ret
 ENDP KeyCheckMenu
 
@@ -209,10 +209,10 @@ PROC PrintRules
     mov ah, 0h  ;Int requirement
 	  int 16h     ;Execute
 
-		cmp ah, ENTER_KEY
+		cmp ah, ENTER_KEY  ;If the key is not equel to enter jmp @@Again:
 		jne @@Again
 
-		call PrintMenu
+		call PrintMenu ;Print back the menu
 
 
 
