@@ -11,8 +11,10 @@
 		STACK 256
 
 		DATASEG
+		PRESS_ENTER db "Press ENTER to continue"
 		include "rules.dat"
 	  include "intro.dat"
+		include "about.dat"
 		KEY_PAD_1 equ 4Fh
 		KEY_PAD_2 equ 50h
 		KEY_PAD_3 equ 51h
@@ -160,7 +162,7 @@ KEYPAD2:
 		call PrintMenu
 KEYPAD3:
 		call ClearScreen
-		jmp Exit
+		call PrintAbout
 
         ret
 ENDP KeyCheckMenu
@@ -179,8 +181,8 @@ PROC PrintRules
 
 		mov ah,13h     ;Int requirement
 		mov bh,0       ;Page number
-		mov al, 1	   ;Mode
-		push ds		   ;ES as datasegment
+		mov al, 1	     ;Mode
+		push ds		     ;ES as datasegment
 		pop es         ;ES:BP
 
 		mov bl, 00001011b  ;Color attribute
@@ -245,5 +247,68 @@ Again:
 
 		ret
 ENDP ClearScreen
+;------------------------------
+;PrintAbout - Print the about tab from menu
+;------------------------------
+;Input:
+;
+;Output:
+;					About tab
+;Registers:
+;
+;------------------------------
+PROC PrintAbout
+		mov ah,13h     ;Int requirement
+		mov bh,0       ;Page number
+		mov al, 1	     ;Mode
+		push ds		     ;ES as datasegment
+		pop es         ;ES:BP
+
+		mov bl, 00001111b  ;Color attribute
+		mov cx, 113    ;Size of text
+		mov dl, 0       ;Column
+		mov dh, 11	   ;row
+		mov bp, offset about1  ;Title location
+		int 10h        ;Execute
+
+		mov bl, 00001110b
+		mov cx, 12
+		mov dl, 25
+		mov dh, 11
+		mov bp, offset name1 ;Title location (Omer)
+		int 10h
+
+		mov bl, 00001011b  ;Color attribute
+		mov cx, 14 				 ;Size of text
+		mov dl, 38         ;Column
+		mov dh, 12         ;Row
+		mov bp, offset name2 ;Title location (Anatoly)
+		int 10h            ;Execute
+
+		mov bl, 00001111b  ;Color attribute
+		mov cx, 23 				 ;Size of text
+		mov dl, 29         ;Column
+		mov dh, 14         ;Row
+		mov bp, offset PRESS_ENTER ;Title location (Anatoly)
+		int 10h            ;Execute
+
+@@Again:
+;Clear keyboard buffer
+	  mov ah,0ch
+		mov al,0h
+	  int 21h
+
+
+;Read char from keyboard buffer (int 16h)
+		mov ah, 0h  ;Int requirement
+	  int 16h     ;Execute
+
+		cmp ah,ENTER_KEY
+		jne @@Again
+
+		call PrintMenu
+
+		ret
+ENDP PrintAbout
 EndCall:
 		END start
