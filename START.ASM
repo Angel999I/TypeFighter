@@ -199,25 +199,6 @@ PROC PrintRules
 		mov bp, offset rules2  ;Title location
 		int 10h        ;Execute
 
-@@Again:
-
-;Clear keyboard buffer
-	  mov ah,0ch
-	  mov al,0h
-	  int 21h
-
-
-;Read char from keyboard buffer (int 16h)
-    mov ah, 0h  ;Int requirement
-	  int 16h     ;Execute
-
-		cmp ah, ENTER_KEY  ;If the key is not equel to enter jmp @@Again:
-		jne @@Again
-
-		call PrintMenu ;Print back the menu
-
-
-
 		ret
 ENDP PrintRules
 ;------------------------------
@@ -291,23 +272,6 @@ PROC PrintAbout
 		mov dh, 14         ;Row
 		mov bp, offset PRESS_ENTER ;Title location (Anatoly)
 		int 10h            ;Execute
-
-@@Again:
-;Clear keyboard buffer
-	  mov ah,0ch
-		mov al,0h
-	  int 21h
-
-
-;Read char from keyboard buffer (int 16h)
-		mov ah, 0h  ;Int requirement
-	  int 16h     ;Execute
-
-		cmp ah,ENTER_KEY
-		jne @@Again
-
-		call PrintMenu
-
 		ret
 ENDP PrintAbout
 EndCall:
