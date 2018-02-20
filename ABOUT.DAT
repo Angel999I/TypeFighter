@@ -1,0 +1,5 @@
+about1 db ""
+db "                 Made by             , 10th grade project 2018",13,10
+db "                            Teacher:               "
+name1 db "Omer Benisty"
+name2 db "Anatoly Paymer"

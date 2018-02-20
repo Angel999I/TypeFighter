@@ -55,7 +55,7 @@ PROC PrintMenu
 
 call ClearScreen ;Clear the screen before printing out the menu
 
-;Prep for int 10h interupt theat print with color
+;Prep for int 10h interupt that print with color
 ;-----------------------------------------------
 		mov ah,13h     ;Int requirement
 		mov bh,0       ;Page number
@@ -81,31 +81,37 @@ call ClearScreen ;Clear the screen before printing out the menu
 		mov bp, offset startT  ;Title location
 		int 10h        ;Execute
 
-;Set the color for the *RULES* title and print it
+;Print the *RULES* title
 ;------------------------------------------------
-		mov bl, 00001011b  ;Color attribute
 		mov cx, 241    ;Size of text
     mov dl, 0      ;Column
 		mov dh, 13	   ;row
 		mov bp, offset rules  ;Title location
 		int 10h        ;Execute
 
-;Set the color for the *ABOUT* title and print it
+;Print the *ABOUT* title
 ;------------------------------------------------
-		mov bl, 00001011b  ;Color attribute
 		mov cx, 253    ;Size of text
     mov dl, 0      ;Column
 		mov dh, 18	   ;row
 		mov bp, offset about  ;Title location
 		int 10h        ;Execute
 
-;Set the color for the *HINT:* text of the sentence
+;Set the color for the *HINT:* and print it
 ;------------------------------------------------
 		mov bl, 00001111b  ;Color attribute
 		mov cx, 120    ;Size of text
     mov dl, 0      ;Column
 		mov dh, 23	   ;row
-		mov bp, offset hint  ;Title location
+		mov bp, offset hint2  ;Title location
+		int 10h        ;Execute
+
+;Set the color for the *HINT:* text and print it
+;------------------------------------------------
+    mov bl, 00001011b  ;Color attribute
+		mov cx, 5    ;Size of text
+		mov dl, 12      ;Column
+		mov bp, offset hint1  ;Title location
 		int 10h        ;Execute
 		call KeyCheckMenu
     ret  ;Return to the main block
@@ -188,16 +194,24 @@ PROC PrintRules
 		mov bl, 00001011b  ;Color attribute
 		mov cx, 321    ;Size of text
     mov dl, 0       ;Column
-		mov dh, 0	   ;row
+		mov dh, 8	   ;row
 		mov bp, offset rules1  ;Title location
 		int 10h        ;Execute
 
 		mov bl, 00001110b  ;Color attribute
 		mov cx, 64     ;Size of text
     mov dl, 0      ;Column
-		mov dh, 7	   ;row
+		mov dh, 15	   ;row
 		mov bp, offset rules2  ;Title location
 		int 10h        ;Execute
+
+		mov bl, 00001111b  ;Color attribute
+		mov cx, 23     ;Size of text
+		mov dl, 28      ;Column
+		mov dh, 24	   ;row
+		mov bp, offset PRESS_ENTER  ;Title location
+		int 10h        ;Execute
+
 
 @@Again:
 
