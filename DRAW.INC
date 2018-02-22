@@ -1,67 +1,13 @@
 ;------------------------------------------
-; PURPOSE : Key breaker' draw tools 
-; SYSTEM  : Turbo Assembler Ideal Mode  
-; AUTHOR  : Almog Hamdani 
+; PURPOSE : Key breaker' draw tools
+; SYSTEM  : Turbo Assembler Ideal Mode
+; AUTHOR  : Omer benisty (Made with almog hamdani's source code)
 ;------------------------------------------
 
 ;-----  This segment will hold the contents of the file we open
 SEGMENT FILEBUF para public
         DB 65200 dup (?)
 ENDS
-
-PROC DrawRectangle
-
-;-----  Set Y as the start of the rectangle
-        mov ax, [StartY]
-        mov [Y], ax
-
-@@Rectangle:
-;-----  Set X as the start of the rectangle
-        mov ax, [StartX]
-        mov [X], ax
-
-        mov cx, [SizeWidth] ; Set for loop
-
-@@DrawHLine:
-        call PutPixel
-        inc [X] ; Set next pixel
-        loop @@DrawHLine
-
-        inc [Y] ; Set next line
-
-;-----  Check if didn't reach last line
-        mov ax, [SizeHeight]
-        add ax, [StartY]
-        cmp [Y], ax
-        jbe @@Rectangle
-                      
-        ret
-ENDP DrawRectangle
-
-;------------------------
-;PaintScreen - Paints the entire screen in 1 color
-;------------------------
-;Input:
-;       Color <- The color to paint with
-;Output:
-;       The entire screen with the color
-;Registers:
-;       AX, BX, CX, DX, SI, DI, ES
-;------------------------
-
-PROC PaintScreen
-        mov [X], 0
-        mov [Y], 0
-
-@@Paint:
-        call PutPixel
-
-        inc [X]
-        cmp [X], 320 * 200
-        jne @@Paint
-
-        ret
-ENDP PaintScreen
 
 ;------------------------
 ;ReadPCX - Reads a PCX file
@@ -75,6 +21,8 @@ ENDP PaintScreen
 ;------------------------
 
 PROC ReadPCX
+
+
 ;-----  Try open file using interrupt
         mov ah, 3Dh ; Interrupt entry
         mov al, 0h ; Open for read only
@@ -160,6 +108,17 @@ PROC ReadPCX
         mov ah, 9h
         lea dx, [PCXErrorMSG]
         int 21h
+
+        ;Clear keyboard buffer
+        	  mov ah,0ch
+        		mov al,0h
+        	  int 21h
+
+
+        ;Read char from keyboard buffer (int 16h)
+        		mov ah, 0h  ;Int requirement
+        	  int 16h     ;Execute
+
         jmp Exit
 
 ENDP
@@ -268,6 +227,7 @@ PROC DrawPCX
         mov bx, [StartY]
         add bx, [ImageHeight]
         cmp bx, [Y]
+
         je @@End
 
         jmp @@GetByte
@@ -284,81 +244,16 @@ PROC DrawPCX
         jmp Exit
 
 @@End:
+
+
 ;-----  Return video memory
         mov ax, 0A000h
         mov es, ax
 
+
         ret
 ENDP DrawPCX
 
-;------------------------
-;ClearSprite - Removes sprite from screen
-;------------------------
-;Input:
-;       X, Y, Color, CX <- Sprite' height, DX <- Sprite' width
-;Output:
-;       None
-;Registers:
-;       AX, CX, DX, SI, DI, ES
-;------------------------
-
-PROC ClearSprite
-        push dx ; Save sprite' original width
-
-@@Cycle:
-        call PutPixel
-        inc [X] ; Move pixel' x by 1
-        dec dx ; Decrease width by 1
-        jnz @@Cycle ; While we didn't reach 0 (End of line), keep on cycle
-
-        pop dx ; Return sprite' original width
-        push dx ; Save width in stack
-
-        sub [X], dx ; Set ax to start of line again
-        inc [Y] ; Point to a new line
-
-        dec cx ; Decrease sprite' height
-        jnz @@Cycle
-
-        pop dx ; Clean stack
-        ret
-ENDP ClearSprite
-
-;------------------------
-;PrintSprite - Prints a sprite to the screen
-;------------------------
-;Input:
-;       X, Y, CX <- Sprite' height, DX <- Sprite' width, SI <- Sprite' offset
-;Output:
-;       None
-;Registers:
-;       AX, CX, DX, SI, DI, ES
-;------------------------
-
-PROC PrintSprite
-        push dx ; Save sprite' original width
-
-@@Cycle:
-        mov al, [si]
-        mov [Color], al ; Get pixel' color and set in cl
-        call PutPixel
-        inc si ; Point to next pixel' color
-        inc [X] ; Move pixel' x by 1
-        dec dx ; Decrease width by 1
-        jnz @@Cycle ; While we didn't reach 0 (End of line), keep on cycle
-
-        pop dx ; Return sprite' original width
-        push dx ; Save width in stack
-
-        sub [X], dx ; Set ax to start of line again
-        inc [Y] ; Point to a new line
-
-        dec cx ; Decrease sprite' height
-        jnz @@Cycle
-
-        pop dx ; Clean stack
-        ret
-ENDP PrintSprite
 
 ;------------------------
 ;PutPixel - Write dot
@@ -383,27 +278,3 @@ PROC PutPixel
         pop ax
         ret
 ENDP PutPixel
-
-;------------------------
-;GetPixel - Read dot
-;------------------------
-;Input:
-;       X, Y
-;Output:
-;       Color
-;Registers:
-;       AX, DI, ES
-;------------------------
-PROC GetPixel
-        push ax
-        mov di, [Y]
-        mov ax, [Y]
-        shl di, 8
-        shl ax, 6
-        add di, ax
-        add di, [X]
-        mov al, [es:di]
-        mov [Color], al
-        pop ax
-        ret
-ENDP GetPixel

@@ -20,6 +20,21 @@
 		KEY_PAD_3 equ 51h
 		ENTER_KEY equ 1Ch
 
+;Variables for opening a pcx file/Drawing is general
+
+		FileHandle dw ?
+		FileSize dw ?
+		PCXErrorMSG db "PCX ERROR$"
+		ImageWidth dw ?
+		ImageHeight dw ?
+		Color db ?
+		StartX dw ?
+		StartY dw ?
+		X dw ?
+		Y dw ?
+		StoryText db "Story.pcx"
+		FileName db 9 dup (?)
+
 
 		CODESEG
 Start:
@@ -33,6 +48,7 @@ Start:
 
         ;Print the title and the options
         call PrintMenu
+
 
 Exit:
         mov ax, 4C00h
@@ -118,6 +134,9 @@ call ClearScreen ;Clear the screen before printing out the menu
 
 ENDP PrintMenu
 
+Exit1:
+		jmp Exit
+
 ;------------------------------
 ;KeyCheckMenu - checks the key for the menu options
 ;------------------------------
@@ -153,7 +172,7 @@ KeyCheckMenuStart:
 		je KEYPAD3
 
 		dec ah
-		jz Exit ;ESC keycode = 0, check if the button is ESC and if yes exit
+		jz Exit1 ;ESC keycode = 0, check if the button is ESC and if yes exit
 
 		jmp KeyCheckMenuStart ;If the button is not any of above, redo the process
 
@@ -161,7 +180,8 @@ KeyCheckMenuStart:
 
 KEYPAD1:
 		call ClearScreen
-		jmp exit
+		call Story
+		jmp Exit1
 KEYPAD2:
 		call ClearScreen
 		call PrintRules
@@ -324,5 +344,9 @@ PROC PrintAbout
 
 		ret
 ENDP PrintAbout
+
+include "game.dat"
+include "draw.inc"
+
 EndCall:
 		END start
