@@ -1,6 +1,7 @@
 # TypeFight
+This is 10th grade project, A typing contest game made in assembly (TASM).
+Only for learning and practicing purposes.
 
-# LOG
 
 # Version 0.1
 * Added a cosmetic menu (Not functional)
