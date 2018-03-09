@@ -1,0 +1,28 @@
+;------------------------------------------
+; PURPOSE : Project "Type Fight"
+; SYSTEM  : Turbo Assembler Ideal Mode
+; AUTHOR  : Omer benisty
+;------------------------------------------
+
+
+PROC Story
+				;Prep for printing the story pcx
+				mov [StartX], 0
+				mov [StartY], 0
+				mov cx, 9
+@@Again:
+
+				mov ah, [StoryText + si]
+				mov [FileName + si], ah
+				inc si
+				loop @@Again
+
+				;Set graphics mode
+				mov ax, 13h
+        int 10h      ;Execute
+
+
+				call DrawPCX
+				ret
+
+ENDP Story
