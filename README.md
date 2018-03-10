@@ -21,3 +21,11 @@ Only for learning and practicing purposes.
 * Added functionality to the start option, the option will now display the "Story.pcx" file
 * added Game.dat that contains the elements of the game
 * added a game playfield, opens after the story scene (Not functional)
+
+# Version 0.35
+* Added flowchart for a difficulty selection screen
+* Fixed an issue where if you choose the about tab in the menu and try to start the game, it would go to the about tab again
+* Added an pcx file contains the difficulty selection screen
+* Shows the Difficulty selection screen after the story scene
+* Choosing options in the difficulty screen change the variables "Time" and "Words" which determine elements in the game
+
