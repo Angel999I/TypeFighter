@@ -346,7 +346,7 @@ PROC PrintAbout
 ENDP PrintAbout
 
 include "game.dat"
-include "draw.inc"
+include "draw.dat"
 
 EndCall:
 		END start
