@@ -99,19 +99,19 @@ PROC DifficultySelect
 
 @@KEYPAD1:
 		mov [Time], 10
-		mov [Words], 15
+		mov [WordsCount], 15
 		jmp @@Return
 @@KEYPAD2:
   	mov [Time], 5
-		mov [Words], 20
+		mov [WordsCount], 20
 		jmp @@Return
 @@KEYPAD3:
 		mov [Time], 3
-		mov [Words], 25
+		mov [WordsCount], 25
 		jmp @@Return
 @@KEYPAD4:
 		mov [Time], 2
-		mov [Words], 30
+		mov [WordsCount], 30
 		jmp @@Return
 
 @@Return:
@@ -147,32 +147,45 @@ PROC GameBoard
 ;---------=Prep for int 10h 13h
 		mov ah,13h     ;Int requirement
 		mov bh,0       ;Page number
-		mov al, 0	   ;Mode
-	  push ds		   ;ES as datasegment
+		mov al, 0	     ;Mode
+	  push ds		     ;ES as datasegment
 		pop es         ;ES:BP
 
 ;---------=Print "Score" title
 		mov bl, 00000111b  ;Color attribute
 		mov cx, 7    ;Size of text
-    mov dl, 2      ;Column
+    mov dl, 2    ;Column
 		mov dh, 2	   ;row
 		mov bp, offset scoreTitle  ;Title location
-		int 10h        ;Execute
+		int 10h      ;Execute
 
 ;---------=Print "Time" Title
-		mov cx, 6
-		mov dl, 30
-		mov dh, 2
-		mov bp, offset TimeTitle
-		int 10h
-
+		mov cx, 6   ;Word length
+		mov dl, 30  ;Column
+		mov dh, 2   ;Row
+		mov bp, offset TimeTitle  ;Title location
+		int 10h     ;Execute
 
 ;---------=Set cursor before input
-		mov ah, 02h
-		mov dh, 24
-		mov dl, 0
-		mov bh, 0
-		int 10h
+		mov ah, 02h  ;Int requirement
+		mov dh, 8    ;Row
+		mov dl, 18	 ;Column
+		mov bh, 0    ;Page number
+		int 10h      ;Execute
+
+;---------=Print word for user to Type
+		mov ah, 09h
+		mov si, 10   ;Pointer of Words variable
+		lea dx, Words + si
+		int 21h
+
+;---------=Set cursor before input
+		mov ah, 02h  ;Int requirement
+		mov dh, 24   ;Row
+		mov dl, 0		 ;Column
+		mov bh, 0    ;Page number
+		int 10h      ;Execute
+
 ;---------=Input string from user
 		mov ah, 0Ah
 		mov dx, offset CurrentWord

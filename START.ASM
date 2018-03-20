@@ -26,9 +26,11 @@
 ;----------=Variables for the game itself
 		ScoreTitle db "Score: "
 		TimeTitle db "Time: "
-		CurrentWord db 16, 15 dup (?)
+		CurrentWord db 39, 38 dup (?)
 		Time db ?
-		Words db ?
+		Score db ?
+		WordsCount db ?
+		Words db "word","$$$$$$","whale","$$$$$","terms","$$$$$","work","$$$$$","focus","$$$$$","monday","$$$$"
 
 ;Variables for opening a pcx file & Drawing in general
 		FileName db 10 dup (?)
