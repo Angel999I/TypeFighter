@@ -4,25 +4,179 @@
 ; AUTHOR  : Omer benisty
 ;------------------------------------------
 
-
+;------------------------------
+;Story - Display the story text page for user
+;------------------------------
+;Input:
+;
+;Output:
+;					Story.pcx is displayed
+;Registers:
+;			  	CX,SI,AX
+;------------------------------
 PROC Story
-				;Prep for printing the story pcx
-				mov [StartX], 0
-				mov [StartY], 0
-				mov cx, 9
+;--------=Prep for printing the story pcx
+		mov [StartX], 0  ;X location on the screen
+		mov [StartY], 0 ;Y location on the screen
+
+		mov cx, 9 ;Loop value for replacing the FileName variable
+		mov si, 0 ;Reset si, used as pointer
 @@Again:
+;--------=Copy the file name from StoryText to FileName
+		mov ah, [File1 + si]
+		mov [FileName + si], ah
+		inc si
 
-				mov ah, [StoryText + si]
-				mov [FileName + si], ah
-				inc si
-				loop @@Again
+		loop @@Again
 
-				;Set graphics mode
-				mov ax, 13h
-        int 10h      ;Execute
+;-------=Set graphics mode
+		mov ax, 13h  ;Int requirement
+    int 10h      ;Execute
 
 
-				call DrawPCX
-				ret
+		call DrawPCX ;This precedure display the pcx
+
+
+;-------=Press enter to continue
+		call PressEnter
+		ret
 
 ENDP Story
+
+;------------------------------
+;DifficultySelect - Show the difiiculty Select screen
+;------------------------------
+;Input:
+;
+;Output:
+;				DifSc.pcx is displayed
+;Registers:
+;
+;------------------------------
+PROC DifficultySelect
+;--------=Prep for printing the story pcx
+		mov [StartX], 0  ;X location on the screen
+		mov [StartY], 0 ;Y location on the screen
+
+		mov cx, 9 ;Loop value for replacing the FileName variable
+		mov si, 0 ;Reset si, used as pointer
+
+@@Name:
+;--------=Copy the file name from StoryText to FileName
+		mov ah, [File3 + si]
+		mov [FileName + si], ah
+		inc si
+
+		loop @@Name
+
+		call DrawPCX ;This precedure display the pcx
+
+
+@@Again:
+;--------=Clear keyboard buffer
+		mov ah,0ch
+		mov al,0h
+		int 21h
+
+
+;--------=Read char from keyboard buffer (int 16h)
+		mov ah, 0h  ;Int requirement
+		int 16h     ;Execute
+
+		cmp ah, KEY_PAD_1
+		je @@KEYPAD1
+
+		cmp ah, KEY_PAD_2
+		je @@KEYPAD2
+
+		cmp ah, KEY_PAD_3
+		je @@KEYPAD3
+
+		cmp ah, KEY_PAD_4
+		je @@KEYPAD4
+
+		jmp @@Again
+
+@@KEYPAD1:
+		mov [Time], 10
+		mov [Words], 15
+		jmp @@Return
+@@KEYPAD2:
+  	mov [Time], 5
+		mov [Words], 20
+		jmp @@Return
+@@KEYPAD3:
+		mov [Time], 3
+		mov [Words], 25
+		jmp @@Return
+@@KEYPAD4:
+		mov [Time], 2
+		mov [Words], 30
+		jmp @@Return
+
+@@Return:
+		ret
+ENDP DifficultySelect
+;------------------------------
+;GameBoard - Display the game board
+;------------------------------
+;Input:
+;
+;Output:
+;				GameB.pcx is displayed
+;Registers:
+;				CX,SI
+;------------------------------
+PROC GameBoard
+;--------=Prep for printing the story pcx
+		mov [StartX], 0  ;X location on the screen
+		mov [StartY], 0 ;Y location on the screen
+
+		mov cx, 9 ;Loop value for replacing the FileName variable
+		mov si, 0 ;Reset si, used as pointer
+@@Again:
+;--------=Copy the file name from StoryText to FileName
+		mov ah, [File2 + si]
+		mov [FileName + si], ah
+		inc si
+
+		loop @@Again
+
+		call DrawPCX ;This precedure display the pcx
+
+;---------=Prep for int 10h 13h
+		mov ah,13h     ;Int requirement
+		mov bh,0       ;Page number
+		mov al, 0	   ;Mode
+	  push ds		   ;ES as datasegment
+		pop es         ;ES:BP
+
+;---------=Print "Score" title
+		mov bl, 00000111b  ;Color attribute
+		mov cx, 7    ;Size of text
+    mov dl, 2      ;Column
+		mov dh, 2	   ;row
+		mov bp, offset scoreTitle  ;Title location
+		int 10h        ;Execute
+
+;---------=Print "Time" Title
+		mov cx, 6
+		mov dl, 30
+		mov dh, 2
+		mov bp, offset TimeTitle
+		int 10h
+
+
+;---------=Set cursor befor input
+		mov ah, 02h
+		mov dh, 24
+		mov dl, 0
+		mov bh, 0
+		int 10h
+;---------=Input string from user
+		mov ah, 0Ah
+		mov dx, offset CurrentWord
+		int 21h
+
+		ret
+ENDP GameBoard

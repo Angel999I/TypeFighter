@@ -15,13 +15,23 @@
 		include "rules.dat"
 	  include "intro.dat"
 		include "about.dat"
+
 		KEY_PAD_1 equ 4Fh
 		KEY_PAD_2 equ 50h
 		KEY_PAD_3 equ 51h
+		KEY_PAD_4 equ 4Bh
 		ENTER_KEY equ 1Ch
 
-;Variables for opening a pcx file/Drawing is general
 
+;----------=Variables for the game itself
+		ScoreTitle db "Score: "
+		TimeTitle db "Time: "
+		CurrentWord db 16, 15 dup (?)
+		Time db ?
+		Words db ?
+
+;Variables for opening a pcx file & Drawing in general
+		FileName db 10 dup (?)
 		FileHandle dw ?
 		FileSize dw ?
 		PCXErrorMSG db "PCX ERROR$"
@@ -32,31 +42,45 @@
 		StartY dw ?
 		X dw ?
 		Y dw ?
-		StoryText db "Story.pcx"
-		FileName db 9 dup (?)
+		File1 db "Story.pcx"
+		File2 db "GameB.pcx"
+		File3 db "DifSc.pcx"
+
+
 
 
 		CODESEG
 Start:
-        mov ax, @data
-        mov ds, ax
+    mov ax, @data
+    mov ds, ax
 
 
-        ;Set text mode
-        mov ax, 3h   ;Int requirement
-        int 10h      ;Execute
+;---------=Set text mode
+    mov ax, 3h   ;Int requirement
+    int 10h      ;Execute
 
-        ;Print the title and the options
-        call PrintMenu
+;---------=Print the title and the options
+    call PrintMenu
+
+GameStart:
+;---------=Show the story scene and the Game Board
+		call Story
+		call DifficultySelect
+		call GameBoard
+
 
 
 Exit:
-        mov ax, 4C00h
-        int 21h
+    mov ax, 4C00h
+    int 21h
 
 
-;-------------METHODS---------------
+;------------=METHODS=--------------
 
+;This precedure exit the program, neutralizing the jmp distance
+PROC ExitCall
+		jmp Exit
+ENDP ExitCall
 ;------------------------------
 ;PrintMenu - Print the text for of menu (Uses include Intro.dat + int 21h)
 ;------------------------------
@@ -69,7 +93,7 @@ Exit:
 ;------------------------------
 PROC PrintMenu
 
-call ClearScreen ;Clear the screen before printing out the menu
+		call ClearScreen ;Clear the screen before printing out the menu
 
 ;Prep for int 10h interupt that print with color
 ;-----------------------------------------------
@@ -117,7 +141,7 @@ call ClearScreen ;Clear the screen before printing out the menu
 ;------------------------------------------------
 		mov bl, 00001111b  ;Color attribute
 		mov cx, 120    ;Size of text
-    mov dl, 0      ;Column
+	  mov dl, 0      ;Column
 		mov dh, 23	   ;row
 		mov bp, offset hint2  ;Title location
 		int 10h        ;Execute
@@ -134,8 +158,9 @@ call ClearScreen ;Clear the screen before printing out the menu
 
 ENDP PrintMenu
 
-Exit1:
-		jmp Exit
+GameStart1:
+		jmp GameStart
+
 
 ;------------------------------
 ;KeyCheckMenu - checks the key for the menu options
@@ -148,49 +173,50 @@ Exit1:
 ;			AX
 ;------------------------------
 PROC KeyCheckMenu
-
-KeyCheckMenuStart:
-
+@@Again:
 ;Clear keyboard buffer
-        mov ah,0ch
-        mov al,0h
-        int 21h
+    mov ah,0ch
+    mov al,0h
+    int 21h
 
 
 ;Read char from keyboard buffer (int 16h)
-        mov ah, 0h  ;Int requirement
-        int 16h     ;Execute
+    mov ah, 0h  ;Int requirement
+    int 16h     ;Execute
 
 ;Compare the input we got with all four possible keys
 		cmp ah, KEY_PAD_1
-		je KEYPAD1
+		je @@KEYPAD1
 
 		cmp ah,KEY_PAD_2
-		je KEYPAD2
+		je @@KEYPAD2
 
 		cmp ah,KEY_PAD_3
-		je KEYPAD3
+		je @@KEYPAD3
 
 		dec ah
-		jz Exit1 ;ESC keycode = 0, check if the button is ESC and if yes exit
+		jz @@Exit ;ESC keycode = 0, check if the button is ESC and if yes exit
 
-		jmp KeyCheckMenuStart ;If the button is not any of above, redo the process
+		jmp @@Again ;If the button is not any of above, redo the process
 
 ;Any button action:
 
-KEYPAD1:
+@@KEYPAD1:
 		call ClearScreen
-		call Story
-		jmp Exit1
-KEYPAD2:
+		jmp GameStart1
+@@KEYPAD2:
 		call ClearScreen
 		call PrintRules
 		call PrintMenu
-KEYPAD3:
+@@KEYPAD3:
 		call ClearScreen
 		call PrintAbout
+		call PrintMenu
 
-        ret
+    ret
+
+@@Exit:
+		call ExitCall
 ENDP KeyCheckMenu
 
 ;------------------------------
@@ -232,25 +258,7 @@ PROC PrintRules
 		mov bp, offset PRESS_ENTER  ;Title location
 		int 10h        ;Execute
 
-
-@@Again:
-
-;Clear keyboard buffer
-	  mov ah,0ch
-	  mov al,0h
-	  int 21h
-
-
-;Read char from keyboard buffer (int 16h)
-    mov ah, 0h  ;Int requirement
-	  int 16h     ;Execute
-
-		cmp ah, ENTER_KEY  ;If the key is not equel to enter jmp @@Again:
-		jne @@Again
-
-		call PrintMenu ;Print back the menu
-
-
+		call PressEnter
 
 		ret
 ENDP PrintRules
@@ -260,7 +268,7 @@ ENDP PrintRules
 ;Input:
 ;
 ;Output:
-;		Black screen
+;		 	Paint the screen Black
 ;Registers:
 ;		AX,DX,ES,CX
 ;------------------------------
@@ -271,13 +279,13 @@ PROC ClearScreen
 		mov es,ax     ;Start of segment to screen, ES:[DI]
 		mov ax, 0h    ;Color black
 
-Again:
+@@Again:
 
-		mov es:[di], ax ;Mov ax value to a pixel with the pointer di
+		mov [es:di], ax ;Mov ax value to a pixel with the pointer di
 		inc di
 		inc di          ;Inc di twice to move to the next pixel
 		dec cx          ;Loop size
-		jnz Again       ;Loop execute
+		jnz @@Again      ;Loop execute
 
 		ret
 ENDP ClearScreen
@@ -289,7 +297,7 @@ ENDP ClearScreen
 ;Output:
 ;					About tab
 ;Registers:
-;
+;					AX,BX,CX,DX
 ;------------------------------
 PROC PrintAbout
 		mov ah,13h     ;Int requirement
@@ -325,25 +333,41 @@ PROC PrintAbout
 		mov dh, 14         ;Row
 		mov bp, offset PRESS_ENTER ;Title location (Anatoly)
 		int 10h            ;Execute
+		call PressEnter
+
+
+
+		ret
+ENDP PrintAbout
+
+;------------------------------
+;PressEnter - Wait for user to press enter
+;------------------------------
+;Input:
+;
+;Output:
+;
+;Registers:
+;					AX
+;------------------------------
+PROC PressEnter
 
 @@Again:
+
 ;Clear keyboard buffer
 	  mov ah,0ch
-		mov al,0h
+	  mov al,0h
 	  int 21h
 
 
 ;Read char from keyboard buffer (int 16h)
-		mov ah, 0h  ;Int requirement
+    mov ah, 0h  ;Int requirement
 	  int 16h     ;Execute
 
-		cmp ah,ENTER_KEY
+  	cmp ah,ENTER_KEY
 		jne @@Again
-
-		call PrintMenu
-
 		ret
-ENDP PrintAbout
+ENDP PressEnter
 
 include "game.dat"
 include "draw.dat"
