@@ -167,7 +167,7 @@ PROC GameBoard
 		int 10h
 
 
-;---------=Set cursor befor input
+;---------=Set cursor before input
 		mov ah, 02h
 		mov dh, 24
 		mov dl, 0
