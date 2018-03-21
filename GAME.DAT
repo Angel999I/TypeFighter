@@ -165,7 +165,14 @@ PROC GameBoard
 		mov dh, 2   ;Row
 		mov bp, offset TimeTitle  ;Title location
 		int 10h     ;Execute
-
+;---------=Random a number
+		push cx
+		push ax
+		mov cx, 6
+		call Random
+		mov si, ax
+		pop ax
+		pop cx
 ;---------=Set cursor before input
 		mov ah, 02h  ;Int requirement
 		mov dh, 8    ;Row
@@ -175,8 +182,7 @@ PROC GameBoard
 
 ;---------=Print word for user to Type
 		mov ah, 09h
-		mov si, 10   ;Pointer of Words variable
-		lea dx, Words + si
+		lea dx,[Words + si]
 		int 21h
 
 ;---------=Set cursor before input
@@ -193,3 +199,29 @@ PROC GameBoard
 
 		ret
 ENDP GameBoard
+;------------------------------
+;Random - Generate a random number in a certain range
+;------------------------------
+;Input:
+;					ch -> ranges
+;Output:
+;					A random number
+;Registers:
+;
+;------------------------------
+PROC Random
+		in ax, 40h  
+
+		xor dx, dx
+		div cx
+
+		xor cx, cx
+		xor ax, ax
+		mov cl, dl
+		mov al, 10
+
+		xor dx,dx
+		mul cx
+
+		ret
+ENDP Random

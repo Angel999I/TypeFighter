@@ -30,7 +30,7 @@
 		Time db ?
 		Score db ?
 		WordsCount db ?
-		Words db "word","$$$$$$","whale","$$$$$","terms","$$$$$","work","$$$$$","focus","$$$$$","monday","$$$$"
+		Words db "word","$$$$$$","whale","$$$$$","terms","$$$$$","work","$$$$$$","focus","$$$$$","monday","$$$$"
 
 ;Variables for opening a pcx file & Drawing in general
 		FileName db 10 dup (?)
