@@ -165,25 +165,45 @@ PROC GameBoard
 		mov dh, 2   ;Row
 		mov bp, offset TimeTitle  ;Title location
 		int 10h     ;Execute
+
+		call WordDisplay
+		ret
+ENDP GameBoard
+;------------------------------
+;WordDisplay
+;------------------------------
+;Input:
+;
+;Output:
+;
+;Registers:
+;
+;------------------------------
+PROC WordDisplay
 ;---------=Random a number
-		push cx
-		push ax
-		mov cx, 6
-		call Random
-		mov si, ax
-		pop ax
-		pop cx
-;---------=Set cursor before input
+		push cx     ;Save cx value
+		push ax     ;Save ax value
+
+		xor ax,ax
+		mov cx, 42   ;Number of words, range of number
+		call Random ;Get a random number
+
+		mov si, ax  ;Move the random number to si
+		push si
+
+		pop ax      ;Get back ax value
+		pop cx      ;Get back cx value
+;---------=Set cursor before printing
 		mov ah, 02h  ;Int requirement
-		mov dh, 8    ;Row
-		mov dl, 18	 ;Column
+		mov dh, 10    ;Row
+		mov dl, 11	 ;Column
 		mov bh, 0    ;Page number
 		int 10h      ;Execute
 
 ;---------=Print word for user to Type
-		mov ah, 09h
+		mov ah, 09h  ;Int requirement
 		lea dx,[Words + si]
-		int 21h
+		int 21h      ;execute
 
 ;---------=Set cursor before input
 		mov ah, 02h  ;Int requirement
@@ -193,35 +213,216 @@ PROC GameBoard
 		int 10h      ;Execute
 
 ;---------=Input string from user
-		mov ah, 0Ah
+		mov ah, 0Ah	 ;Int requirement
 		mov dx, offset CurrentWord
-		int 21h
+		int 21h			 ;Execute
 
+;---------=Clear the word typing space
+		mov [StartX], 0
+		mov [StartY], 191
+		mov [EndX], 320
+		mov [EndY], 200
+		mov [Color], 0
+
+		call ClearArea
+
+		mov [StartX], 84
+		mov [StartY], 77
+		mov [EndX], 244
+		mov [EndY], 91
+
+		call ClearArea
+
+		call WordCheck
+
+		xor ax, ax
+
+		mov al, [Score]
+		lea si, [ScoreTitle + 7]
+
+		call NumberToString
+
+;---------=Prep for int 10h 13h
+		mov ah,13h     ;Int requirement
+		mov bh,0       ;Page number
+		mov al, 0	     ;Mode
+	  push ds		     ;ES as datasegment
+		pop es         ;ES:BP
+
+
+		mov bl, 00000111b  ;Color attribute
+		mov cx, 10    ;Size of text
+    mov dl, 2    ;Column
+		mov dh, 2	   ;row
+		mov bp, offset scoreTitle  ;Title location
+		int 10h      ;Execute
+
+
+		call WordDisplay
+
+
+ENDP WordDisplay
+;------------------------
+;NumberToString - This is converts a number to a string
+;------------------------
+;Input:
+;       AX <- Number, SI <- Pointer to the string that will hold the number
+;Output:
+;       The number in the given string
+;Registers:
+;       AX, BX, SI, DX, CX
+;------------------------
+PROC NumberToString
+		push si
+		push ax
+		push cx
+		push bx
+		push dx
+		xor cx, cx
+@@DigitLoop:
+;-----    Divide in 10
+    mov bx, 10
+    xor dx, dx
+    div bx
+
+    add dx, '0' ; Add the zero in ascii to the digit, to get the digit in ascii
+
+    push dx ; Save char in stack
+    inc cx ; Increase counter
+
+;-----    Check if the number isn't 0
+    cmp ax, 0
+    jne @@DigitLoop
+
+@@DigitCharLoop:
+    pop dx ; Get char from stack
+
+    mov [byte si], dl ; Set in the string the character
+    inc si ; Move to next char
+
+    loop @@DigitCharLoop
+
+		pop dx
+		pop bx
+		pop cx
+		pop ax
+		pop si
+
+    ret
+ENDP NumberToString
+;------------------------------
+;
+;------------------------------
+;Input:
+;
+;Output:
+;
+;Registers:
+;
+;------------------------------
+PROC WordCheck
+		push ax
+		push di
+
+
+		mov di, 2
+@@Again:
+
+		mov al, [byte CurrentWord + di]
+		mov ah, [byte Words + si]
+
+		cmp ah, '$'
+		je @@True
+
+		cmp ah,al
+		jne @@False
+
+		inc di
+		inc si
+		jmp @@Again
+
+@@True:
+		inc [Score]
+@@False:
+		pop ax
+		pop di
 		ret
-ENDP GameBoard
+ENDP WordCheck
 ;------------------------------
 ;Random - Generate a random number in a certain range
 ;------------------------------
 ;Input:
-;					ch -> ranges
+;					cx -> ranges
 ;Output:
 ;					A random number
 ;Registers:
 ;
 ;------------------------------
 PROC Random
-		in ax, 40h  
+		in ax, 40h  ;Get a random number from timer 0 - 255
 
-		xor dx, dx
-		div cx
+		xor dx, dx  ;Reset dx for div action
+		div cx      ;Div ax/cx
 
-		xor cx, cx
-		xor ax, ax
-		mov cl, dl
-		mov al, 10
+		xor cx, cx  ;Reset cx
+		xor ax, ax  ;Reset ax
+		mov cx, dx  ;Move the remainder to cl / part of cx
+		mov al, 10  ;The number we going to use the mul with
 
-		xor dx,dx
-		mul cx
+		xor dx,dx   ;Reset dx for mul action
+		mul cx			;Mul ax*cx
 
 		ret
 ENDP Random
+;------------------------------
+;
+;------------------------------
+;Input:
+;
+;Output:
+;
+;Registers:
+;
+;------------------------------
+PROC ClearArea
+		push ax           ;Save ax value
+		mov ax, 0A000h		;0A000h Start of video memory
+		mov es, ax				;ES <- 0A000
+
+		mov ax, [StartY]  ;AX <- Start of Y location
+		mov [Y], ax				;Y <- AX
+		mov ax, [StartX]	;AX <- Start of X location
+		mov [X], ax				;X <- AX
+
+
+
+@@Again:
+		call PutPixel     ;PutPixel [Change pixel color at [X] and [Y] position]
+
+		inc [X]           ;X++ Next pixel
+
+		mov ax, [EndX]    ;AX <- End of x value
+		cmp [X], ax				;X ? AX
+		je @@NewLine			;Start a new line
+
+		jmp @@Again				;If not continue
+
+
+@@NewLine:
+		mov ax, [StartX]	;AX <- Start of X value
+		mov [X], ax				;X <- AX
+
+		inc [Y]						;Y++ Next line
+
+		mov ax, [EndY]   	;AX <- End of Y value
+		cmp [Y], ax				;Y ? AX
+		je @@End					;End of the paint process
+
+		jmp @@Again				;If not continue
+
+@@End:
+
+		pop ax						;Get back ax value
+
+		ret
+ENDP ClearArea

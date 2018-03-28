@@ -1,10 +1,10 @@
 
  Start  Stop   Length Name               Class
 
- 00000H 003D5H 003D6H _TEXT              CODE
- 003E0H 00BB9H 007DAH _DATA              DATA
- 00BC0H 00CBFH 00100H STACK              STACK
- 00CC0H 10B6FH 0FEB0H FILEBUF            
+ 00000H 004BDH 004BEH _TEXT              CODE
+ 004C0H 00E26H 00967H _DATA              DATA
+ 00E30H 00F2FH 00100H STACK              STACK
+ 00F30H 10DDFH 0FEB0H FILEBUF            
 
 Program entry point at 0000:0000
 
