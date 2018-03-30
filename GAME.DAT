@@ -185,11 +185,10 @@ PROC WordDisplay
 		push ax     ;Save ax value
 
 		xor ax,ax
-		mov cx, 42   ;Number of words, range of number
+		mov cx, 56   ;Number of words, range of number
 		call Random ;Get a random number
 
 		mov si, ax  ;Move the random number to si
-		push si
 
 		pop ax      ;Get back ax value
 		pop cx      ;Get back cx value
@@ -218,6 +217,7 @@ PROC WordDisplay
 		int 21h			 ;Execute
 
 ;---------=Clear the word typing space
+
 		mov [StartX], 0
 		mov [StartY], 191
 		mov [EndX], 320
@@ -311,27 +311,30 @@ PROC NumberToString
     ret
 ENDP NumberToString
 ;------------------------------
-;
+;WordCheck - Check if the word from user input matches the game word
 ;------------------------------
 ;Input:
-;
+;				CurrentWord <- From user
 ;Output:
-;
+;				INC Score \ Do nothing
 ;Registers:
-;
+;				AX, DI, CX
 ;------------------------------
 PROC WordCheck
+;---------=Store all Registers
 		push ax
 		push di
+		push cx
 
+		xor cx,cx ;Reset cx
 
-		mov di, 2
+		mov di, 2 ;Start position of the word in CurrentWord variable
 @@Again:
 
-		mov al, [byte CurrentWord + di]
-		mov ah, [byte Words + si]
+		mov al, [byte CurrentWord + di] ;AL <- byte CurrentWord
+		mov ah, [byte Words + si]				;AH <- byte Words
 
-		cmp ah, '$'
+		cmp ch, [byte CurrentWord + 1]
 		je @@True
 
 		cmp ah,al
@@ -339,13 +342,18 @@ PROC WordCheck
 
 		inc di
 		inc si
+		inc ch
 		jmp @@Again
 
 @@True:
 		inc [Score]
 @@False:
-		pop ax
+
+;-----=Restore all Registers
+		pop cx
 		pop di
+		pop ax
+
 		ret
 ENDP WordCheck
 ;------------------------------
