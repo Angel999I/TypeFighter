@@ -19,7 +19,7 @@ PROC Story
 		mov [StartX], 0  ;X location on the screen
 		mov [StartY], 0 ;Y location on the screen
 
-		mov cx, 9 ;Loop value for replacing the FileName variable
+		mov cx, 16 ;Loop value for replacing the FileName variable
 		mov si, 0 ;Reset si, used as pointer
 @@Again:
 ;--------=Copy the file name from StoryText to FileName
@@ -58,7 +58,7 @@ PROC DifficultySelect
 		mov [StartX], 0  ;X location on the screen
 		mov [StartY], 0 ;Y location on the screen
 
-		mov cx, 9 ;Loop value for replacing the FileName variable
+		mov cx, 16 ;Loop value for replacing the FileName variable
 		mov si, 0 ;Reset si, used as pointer
 
 @@Name:
@@ -98,20 +98,24 @@ PROC DifficultySelect
 		jmp @@Again
 
 @@KEYPAD1:
-		mov [Time], 10
+		mov [Time], 60
 		mov [WordsCount], 15
+		mov [Difficulty], 1
 		jmp @@Return
 @@KEYPAD2:
-  	mov [Time], 5
+  	mov [Time], 45
 		mov [WordsCount], 20
+		mov [Difficulty], 2
 		jmp @@Return
 @@KEYPAD3:
-		mov [Time], 3
+		mov [Time], 40
 		mov [WordsCount], 25
+		mov [Difficulty], 3
 		jmp @@Return
 @@KEYPAD4:
-		mov [Time], 2
+		mov [Time], 30
 		mov [WordsCount], 30
+		mov [Difficulty], 4
 		jmp @@Return
 
 @@Return:
@@ -132,7 +136,7 @@ PROC GameBoard
 		mov [StartX], 0  ;X location on the screen
 		mov [StartY], 0 ;Y location on the screen
 
-		mov cx, 9 ;Loop value for replacing the FileName variable
+		mov cx, 16 ;Loop value for replacing the FileName variable
 		mov si, 0 ;Reset si, used as pointer
 @@Again:
 ;--------=Copy the file name from StoryText to FileName
@@ -153,18 +157,11 @@ PROC GameBoard
 
 ;---------=Print "Score" title
 		mov bl, 00000111b  ;Color attribute
-		mov cx, 7    ;Size of text
+		mov cx, 9    ;Size of text
     mov dl, 2    ;Column
 		mov dh, 2	   ;row
 		mov bp, offset scoreTitle  ;Title location
 		int 10h      ;Execute
-
-;---------=Print "Time" Title
-		mov cx, 6   ;Word length
-		mov dl, 30  ;Column
-		mov dh, 2   ;Row
-		mov bp, offset TimeTitle  ;Title location
-		int 10h     ;Execute
 
 		call WordDisplay
 		ret
@@ -204,19 +201,91 @@ PROC WordDisplay
 		lea dx,[Words + si]
 		int 21h      ;execute
 
+
 ;---------=Set cursor before input
 		mov ah, 02h  ;Int requirement
 		mov dh, 24   ;Row
 		mov dl, 0		 ;Column
 		mov bh, 0    ;Page number
 		int 10h      ;Execute
+;----------------------------------
+;-     Input string from user     -
+;----------------------------------
+		pusha		;Store registers
 
-;---------=Input string from user
-		mov ah, 0Ah	 ;Int requirement
-		mov dx, offset CurrentWord
-		int 21h			 ;Execute
+		lea si, [CurrentWord]		;SI <- Pointer of currentword
+
+@@Again:
+;---------=Read clock variables
+		mov ah, 02h
+		int 1Ah
+
+;---------=Check if a seond has past
+		cmp dh, [PrevSecond]
+		je @@Continue
+
+		mov [PrevSecond], dh  ;Mov new second to PrevSecond variable
+		call PrintTime				;Print the time on screen
+
+@@Continue:
+
+;---------=Check if there is a character in buffer
+		mov ah, 0Bh
+		int 21h
+		cmp al, 0FFh
+		je @@AddCharacter
+
+		jmp @@Again  ;If not do the process again
+
+@@AddCharacter:
+;---------=Take character from buffer
+		mov ah, 7h
+		int 21h
+
+;---------=Check if the character is DEL
+		cmp al, DEL_KEY_CHARACTER
+		je @@Delete
+;---------=Check if the character is ENTER
+		cmp al, ENTER_KEY_CHARACTER
+		je @@Done
+;---------=Check if the user entered a long word
+		cmp si, offset CurrentWord + 39
+		je @@Again
+;---------=Move the letter into the currentword variable
+		mov [si], al
+		inc si
+;---------=Draw the letter
+		mov ah, 02h
+		mov dl, al
+		int 21h
+
+		jmp @@Again
+@@Delete:
+;---------=Print DEL
+		mov ah, 02h
+		mov dl, DEL_KEY_CHARACTER
+		int 21h
+;---------=Print Space
+		mov dl, ' '
+		int 21h
+;---------=Print DEL
+		mov dl, DEL_KEY_CHARACTER
+		int 21h
+;---------=Clean keyboard buffer
+		mov ah, 0Ch
+		mov al, 0
+		int 21h
+
+		cmp si, offset CurrentWord
+		je @@Again
+		dec si
+		jmp @@Again
 
 ;---------=Clear the word typing space
+@@Done:
+		mov [byte si], '$'
+
+		popa
 
 		mov [StartX], 0
 		mov [StartY], 191
@@ -236,7 +305,6 @@ PROC WordDisplay
 		call WordCheck
 
 		xor ax, ax
-
 		mov al, [Score]
 		lea si, [ScoreTitle + 7]
 
@@ -251,7 +319,7 @@ PROC WordDisplay
 
 
 		mov bl, 00000111b  ;Color attribute
-		mov cx, 10    ;Size of text
+		mov cx, 9    ;Size of text
     mov dl, 2    ;Column
 		mov dh, 2	   ;row
 		mov bp, offset scoreTitle  ;Title location
@@ -273,11 +341,7 @@ ENDP WordDisplay
 ;       AX, BX, SI, DX, CX
 ;------------------------
 PROC NumberToString
-		push si
-		push ax
-		push cx
-		push bx
-		push dx
+		pusha
 		xor cx, cx
 @@DigitLoop:
 ;-----    Divide in 10
@@ -302,12 +366,7 @@ PROC NumberToString
 
     loop @@DigitCharLoop
 
-		pop dx
-		pop bx
-		pop cx
-		pop ax
-		pop si
-
+		popa
     ret
 ENDP NumberToString
 ;------------------------------
@@ -321,40 +380,58 @@ ENDP NumberToString
 ;				AX, DI, CX
 ;------------------------------
 PROC WordCheck
-;---------=Store all Registers
+;---------=Store Registers
 		push ax
 		push di
 		push cx
 
 		xor cx,cx ;Reset cx
 
-		mov di, 2 ;Start position of the word in CurrentWord variable
+		mov di, 0 ;Start position of the word in CurrentWord variable
+
 @@Again:
 
 		mov al, [byte CurrentWord + di] ;AL <- byte CurrentWord
 		mov ah, [byte Words + si]				;AH <- byte Words
 
-		cmp ch, [byte CurrentWord + 1]
-		je @@True
+		cmp al, '$'			;See if the currentword reached its end
+		je @@HalfTrue
 
-		cmp ah,al
+		cmp ah,al				;Compare the letters
 		jne @@False
 
-		inc di
-		inc si
-		inc ch
+		inc di					;INC DI <- CurrentWord pointer
+		inc si					;INC SI <- Words pointer
+
 		jmp @@Again
+
+@@HalfTrue:
+		cmp ah, '$'			;See if the task word reached its end
+		je @@True
+		jmp @@False
 
 @@True:
 		inc [Score]
-@@False:
 
+		mov al, [WordsCount]
+		cmp [Score], al
+		je @@Winner
+		pop cx
+		pop di
+		pop ax
+		ret
+@@False:
+		inc [Mistakes]
 ;-----=Restore all Registers
 		pop cx
 		pop di
 		pop ax
 
 		ret
+
+@@Winner:
+		call WinScreen
+
 ENDP WordCheck
 ;------------------------------
 ;Random - Generate a random number in a certain range
@@ -383,14 +460,14 @@ PROC Random
 		ret
 ENDP Random
 ;------------------------------
-;
+;ClearArea - Paint a certain area in one color
 ;------------------------------
 ;Input:
-;
+;					[StartX] <- Start of x value, [StartY] <- Start of y value, [EndX] <- End of x value, [EndY] <- End of y value
 ;Output:
-;
+;					An area of one color
 ;Registers:
-;
+;					AX, ES
 ;------------------------------
 PROC ClearArea
 		push ax           ;Save ax value
@@ -434,3 +511,323 @@ PROC ClearArea
 
 		ret
 ENDP ClearArea
+;------------------------------
+;PrintTime - Print the time title and the [Time] variable next to it
+;------------------------------
+;Input:
+;				[Time] <- Amount of time left
+;Output:
+;
+;Registers:
+;				AX, SI, BH, DS, ES, CX, DX, BP
+;------------------------------
+PROC PrintTime
+		pusha
+
+;---------=Print "Time"
+		dec [Time]
+		xor ax, ax
+		mov al, [Time]
+		lea si, [TimeTitle + 6]
+		call NumberToString
+;---------=Print "Time" Title
+		mov ah,13h     ;Int requirement
+		mov bh,0       ;Page number
+		mov al, 0	     ;Mode
+		push ds		     ;ES as datasegment
+		pop es         ;ES:BP
+
+		mov cx, 8   ;Word length
+		mov dl, 29  ;Column
+		mov dh, 2   ;Row
+		mov bp, offset TimeTitle  ;Title location
+		int 10h     ;Execute
+
+		mov ah, 9
+
+		cmp [time], ah
+		jna @@Paint
+		popa
+		cmp [Time], 0
+		je @@Failed
+		ret
+
+@@Paint:
+		mov [StartX], 287
+		mov [StartY], 8
+		mov [EndX], 303
+		mov [EndY], 30
+		mov [color], 0
+
+		call ClearArea
+
+		popa
+
+		cmp [Time], 0
+		je @@Failed
+		ret
+@@Failed:
+		call FailScreen
+ENDP PrintTime
+;------------------------------
+;WinScreen
+;------------------------------
+;Input:
+;
+;Output:
+;
+;Registers:
+;
+;------------------------------
+PROC WinScreen
+;--------=Prep for printing the story pcx
+		mov [StartX], 0  ;X location on the screen
+		mov [StartY], 0 ;Y location on the screen
+
+		mov cx, 16 ;Loop value for replacing the FileName variable
+		mov si, 0 ;Reset si, used as pointer
+@@Again:
+;--------=Copy the file name from StoryText to FileName
+		mov ah, [File4 + si]
+		mov [FileName + si], ah
+		inc si
+
+		loop @@Again
+
+		call DrawPCX
+
+;--------=Calculate Score
+		xor ax, ax
+		mov al, [Score]
+		mov [FinalScore], ax
+		mov al, [Time]
+		cmp al, 0
+		je @@TimeIsZero
+		mov bl, [Score]
+		mul bl
+		mov [FinalScore], ax
+
+
+@@TimeIsZero:
+		xor ax, ax
+		mov ax, [FinalScore]
+		lea si, [ScoreText]
+		call NumberToString
+
+		xor ax, ax
+		mov al, [Time]
+		lea si, [TimeText]
+		call NumberToString
+
+		mov al, [WordsCount]
+		lea si, [WordsCountText]
+		call NumberToString
+
+		mov al, [Difficulty]
+		lea si, [DifficultyText]
+		call NumberToString
+
+		mov al, [Mistakes]
+		lea si, [MistakesText]
+		call NumberToString
+
+		cmp [difficulty], 1
+		je @@Green
+		cmp [difficulty], 2
+		je @@Yellow
+		cmp [difficulty], 3
+		je @@Orange
+		cmp [difficulty], 4
+		je @@Red
+
+@@Green:
+		mov bl, 47
+		jmp @@Continue
+@@Yellow:
+		mov bl, 44
+		jmp @@Continue
+@@Orange:
+		mov bl, 42
+		jmp @@Continue
+@@Red:
+		mov bl, 40
+
+@@Continue:
+;---------=Prep for int 10h 13h
+		mov ah,13h     ;Int requirement
+		mov bh,0       ;Page number
+		mov al, 0	     ;Mode
+		push ds		     ;ES as datasegment
+		pop es         ;ES:BP
+
+;---------=Print which difficulty
+		mov cx, 2    ;Size of text
+		mov dl, 68    ;Column
+		mov dh, 12	   ;row
+		mov bp, offset DifficultyText  ;Title location
+		int 10h      ;Execute
+
+;---------=Print extra time
+		mov bl, 47
+		mov cx, 2    ;Size of text
+	  mov dl, 16    ;Column
+		mov dh, 9	   ;row
+		mov bp, offset TimeText  ;Title location
+		int 10h      ;Execute
+
+;---------=Print amount of words
+		mov cx, 2    ;Size of text
+		mov dl, 16    ;Column
+		mov dh, 12	   ;row
+		mov bp, offset WordsCountText  ;Title location
+		int 10h      ;Execute
+
+;---------=Print Amount of mistakes
+		mov cx, 2    ;Size of text
+		mov dl, 68    ;Column
+		mov dh, 9	   ;row
+		mov bp, offset MistakesText  ;Title location
+		int 10h      ;Execute
+
+;---------=Print Score
+  	mov cx, 5    ;Size of text
+		mov dl, 20   ;Column
+		mov dh, 16	   ;row
+		mov bp, offset ScoreText  ;Title location
+		int 10h      ;Execute
+
+		call PressEnter
+
+		mov [Mistakes], 0
+		mov [Score], 0
+		lea si, [ScoreTitle + 7]
+		mov [byte si], " "
+		inc si
+		mov [byte si], " "
+;---------=Set text mode
+		mov ax, 3h   ;Int requirement
+		int 10h      ;Execute
+
+;---------=Print the title and the options
+	  call PrintMenu
+		ret
+ENDP WinScreen
+;------------------------------
+;
+;------------------------------
+;Input:
+;
+;Output:
+;
+;Registers:
+;
+;------------------------------
+PROC FailScreen
+;--------=Prep for printing the story pcx
+		mov [StartX], 0  ;X location on the screen
+		mov [StartY], 0 ;Y location on the screen
+
+		mov cx, 16 ;Loop value for replacing the FileName variable
+		mov si, 0 ;Reset si, used as pointer
+@@Again:
+;--------=Copy the file name from StoryText to FileName
+		mov ah, [File5 + si]
+		mov [FileName + si], ah
+		inc si
+
+		loop @@Again
+
+		call DrawPCX
+
+
+		mov ah, [Score]
+		sub [WordsCount], ah
+;--------=Calculate Score
+		xor ax, ax
+		mov al, [Score]
+		mov [FinalScore], ax
+		mov al, [Time]
+		cmp al, 0
+		je @@TimeIsZero
+		mov bl, [Score]
+		mul bl
+		mov [FinalScore], ax
+
+@@TimeIsZero:
+	  xor ax, ax
+		mov ax, [FinalScore]
+		lea si, [ScoreText]
+		call NumberToString
+
+		xor ax, ax
+		mov al, [Difficulty]
+		lea si, [DifficultyText]
+		call NumberToString
+
+		mov al, [WordsCount]
+		lea si, [WordsCountText]
+		call NumberToString
+
+		cmp [difficulty], 1
+		je @@Green
+		cmp [difficulty], 2
+		je @@Yellow
+		cmp [difficulty], 3
+		je @@Orange
+		cmp [difficulty], 4
+		je @@Red
+
+@@Green:
+		mov bl, 47
+		jmp @@Continue
+@@Yellow:
+		mov bl, 44
+		jmp @@Continue
+@@Orange:
+		mov bl, 42
+		jmp @@Continue
+@@Red:
+		mov bl, 40
+
+@@Continue:
+;---------=Prep for int 10h 13h
+		mov ah,13h     ;Int requirement
+		mov bh,0       ;Page number
+		mov al, 0	     ;Mode
+		push ds		     ;ES as datasegment
+		pop es         ;ES:BP
+
+;---------=Print which difficulty
+		mov cx, 1    ;Size of text
+		mov dl, 69    ;Column
+		mov dh, 9	   ;row
+		mov bp, offset DifficultyText  ;Title location
+		int 10h      ;Execute
+;---------=Print amount of words
+		mov cx, 2    ;Size of text
+		mov dl, 16    ;Column
+		mov dh, 9	   ;row
+		mov bp, offset WordsCountText  ;Title location
+		int 10h      ;Execute
+;---------=Print Score
+		mov cx, 5    ;Size of text
+		mov dl, 20   ;Column
+		mov dh, 16	   ;row
+		mov bp, offset ScoreText  ;Title location
+		int 10h      ;Execute
+
+		call PressEnter
+
+		mov [Mistakes], 0
+		mov [Score], 0
+		lea si, [ScoreTitle + 7]
+		mov [byte si], " "
+		inc si
+		mov [byte si], " "
+;---------=Set text mode
+		mov ax, 3h   ;Int requirement
+		int 10h      ;Execute
+
+
+		call PrintMenu
+ENDP FailScreen

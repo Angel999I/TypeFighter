@@ -4,63 +4,78 @@
 ; AUTHOR  : Omer benisty
 ;------------------------------------------
 
+
 		IDEAL
 
 		MODEL small
 
 		STACK 256
 
-		DATASEG
-		PRESS_ENTER db "Press ENTER to continue"
-		include "rules.dat"
-	  include "intro.dat"
-		include "about.dat"
+		P386
 
-		KEY_PAD_1 equ 4Fh
-		KEY_PAD_2 equ 50h
-		KEY_PAD_3 equ 51h
-		KEY_PAD_4 equ 4Bh
-		ENTER_KEY equ 1Ch
+		DATASEG
+		PRESS_ENTER 								db "Press ENTER to continue"
+
+		include 										"rules.dat"
+	  include 										"intro.dat"
+		include 										"about.dat"
+
+		KEY_PAD_1 									equ 4Fh
+		KEY_PAD_2 									equ 50h
+		KEY_PAD_3 									equ 51h
+		KEY_PAD_4 									equ 4Bh
+		ENTER_KEY 									equ 1Ch
+		ENTER_KEY_CHARACTER 				equ 13
+		DEL_KEY_CHARACTER 					equ 8
 
 
 ;----------=Variables for the game itself
-		ScoreTitle db "Score:    "
-		TimeTitle db "Time: "
-		CurrentWord db 39, 42 dup (?)
-		Time db ?
-		Score db 0
-		WordsCount db ?
-		Words db "word","$$$$$$","whale","$$$$$","terms","$$$$$","work","$$$$$$","focus","$$$$$","monday","$$$$","since","$$$$$","read","$$$$$$","tell","$$$$$$","warm","$$$$$$","long","$$$$$$","close","$$$$$"
-					db "remember","$$","thought","$$$","night","$$$$$","until","$$$$$","seven","$$$$$","head","$$$$$$","plane","$$$$$","reach","$$$$$","color","$$$$$","note","$$$$$$","need","$$$$$$","head","$$$$$$"
-					db "blue","$$$$$$","east","$$$$$$","should","$$$$","such","$$$$$$","young","$$$$$","travel","$$$$","age","$$$$$$$","though","$$$$","just","$$$$$$","heat","$$$$$$","rain","$$$$$$","voice","$$$$$"
-					db "road","$$$$$$","the","$$$$$$$","and","$$$$$$$","need","$$$$$$","hot","$$$$$$$","free","$$$$$$","father","$$$$","red","$$$$$$$","even","$$$$$$","many","$$$$$$","nine","$$$$$$","six","$$$$$$$"
-					db "try","$$$$$$$","late","$$$$$$","interest","$$","act","$$$$$$$","fact","$$$$$$","direct","$$$$","all","$$$$$$$","all","$$$$$$$","cause","$$$$$","rest","$$$$$$","correct","$$$","hard","$$$$$$"
+		ScoreTitle 									db "Score:   "
+		TimeTitle 									db "Time:   "
+		CurrentWord 								db 43 dup (?)
+		Time 												db ?
+		TimeText										db "  "
+		Score 											db 0
+		FinalScore									dw 0
+		ScoreText										db "     "
+		WordsCount 									db ?
+		WordsCountText							db "  "
+		Mistakes										db 0
+		MistakesText								db "  "
+		PrevSecond 									db 0
+		Difficulty 									db 0
+		DifficultyText							db " "
+		Words 											db "word","$$$$$$","whale","$$$$$","terms","$$$$$","work","$$$$$$","focus","$$$$$","monday","$$$$","since","$$$$$","read","$$$$$$","tell","$$$$$$","warm","$$$$$$","long","$$$$$$","close","$$$$$"
+																db "remember","$$","thought","$$$","night","$$$$$","until","$$$$$","seven","$$$$$","head","$$$$$$","plane","$$$$$","reach","$$$$$","color","$$$$$","note","$$$$$$","need","$$$$$$","head","$$$$$$"
+																db "blue","$$$$$$","east","$$$$$$","should","$$$$","such","$$$$$$","young","$$$$$","travel","$$$$","age","$$$$$$$","though","$$$$","just","$$$$$$","heat","$$$$$$","rain","$$$$$$","voice","$$$$$"
+																db "road","$$$$$$","the","$$$$$$$","and","$$$$$$$","need","$$$$$$","hot","$$$$$$$","free","$$$$$$","father","$$$$","red","$$$$$$$","even","$$$$$$","many","$$$$$$","nine","$$$$$$","six","$$$$$$$"
+																db "try","$$$$$$$","late","$$$$$$","interest","$$","act","$$$$$$$","fact","$$$$$$","direct","$$$$","all","$$$$$$$","all","$$$$$$$","cause","$$$$$","rest","$$$$$$","correct","$$$","hard","$$$$$$"
 
 ;42
 ;Variables for opening a pcx file & Drawing in general
-		FileName db 10 dup (?)
-		FileHandle dw ?
-		FileSize dw ?
-		PCXErrorMSG db "PCX ERROR$"
-		ImageWidth dw ?
-		ImageHeight dw ?
-		Color db ?
-		StartX dw ?
-		StartY dw ?
-		X dw ?
-		Y dw ?
-		EndX dw ?
-		EndY dw ?
-		File1 db "Story.pcx"
-		File2 db "GameB.pcx"
-		File3 db "DifSc.pcx"
+		FileName 										db 17 dup (?)
+		FileHandle 									dw ?
+		FileSize 										dw ?
+		PCXErrorMSG 								db "PCX ERROR$"
+		ImageWidth 									dw ?
+		ImageHeight 								dw ?
+		Color 											db ?
+		StartX 											dw ?
+		StartY 											dw ?
+		X 													dw ?
+		Y 													dw ?
+		EndX 												dw ?
+		EndY 												dw ?
+		File1 											db "Visual\Story.pcx"
+		File2 											db "Visual\GameB.pcx"
+		File3 											db "Visual\DifSc.pcx"
+		File4												db "Visual\WinSc.pcx"
+		File5												db "Visual\FailS.pcx"
 
 		CODESEG
 Start:
     mov ax, @data
     mov ds, ax
-
-
 ;---------=Set text mode
     mov ax, 3h   ;Int requirement
     int 10h      ;Execute
