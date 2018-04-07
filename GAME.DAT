@@ -83,6 +83,7 @@ PROC DifficultySelect
 		mov ah, 0h  ;Int requirement
 		int 16h     ;Execute
 
+;--------=Check which button has been pressed
 		cmp ah, KEY_PAD_1
 		je @@KEYPAD1
 
@@ -97,6 +98,7 @@ PROC DifficultySelect
 
 		jmp @@Again
 
+;--------=Act by which button has been pressed
 @@KEYPAD1:
 		mov [Time], 60
 		mov [WordsCount], 15
@@ -209,7 +211,7 @@ PROC WordDisplay
 		mov bh, 0    ;Page number
 		int 10h      ;Execute
 ;----------------------------------
-;-     Input string from user     -
+;      Input string from user
 ;----------------------------------
 		pusha		;Store registers
 
@@ -235,7 +237,7 @@ PROC WordDisplay
 		cmp al, 0FFh
 		je @@AddCharacter
 
-		jmp @@Again  ;If not do the process again
+		jmp @@Again  ;If not, do the process again
 
 @@AddCharacter:
 ;---------=Take character from buffer
@@ -248,6 +250,9 @@ PROC WordDisplay
 ;---------=Check if the character is ENTER
 		cmp al, ENTER_KEY_CHARACTER
 		je @@Done
+;---------=Check if the user pressed ESC
+		cmp al, 27
+		je @@Exit
 ;---------=Check if the user entered a long word
 		cmp si, offset CurrentWord + 39
 		je @@Again
@@ -276,7 +281,7 @@ PROC WordDisplay
 		mov al, 0
 		int 21h
 
-		cmp si, offset CurrentWord
+		cmp si, offset CurrentWord ; See if you are at the start of the line
 		je @@Again
 		dec si
 		jmp @@Again
@@ -284,25 +289,25 @@ PROC WordDisplay
 ;---------=Clear the word typing space
 @@Done:
 		mov [byte si], '$'
-
 		popa
-
+;---------=initializing variables for PROC
 		mov [StartX], 0
 		mov [StartY], 191
 		mov [EndX], 320
 		mov [EndY], 200
 		mov [Color], 0
 
-		call ClearArea
+		call ClearArea ;Execute PROC
 
+;---------=initializing variables for PROC
 		mov [StartX], 84
 		mov [StartY], 77
 		mov [EndX], 244
 		mov [EndY], 91
 
-		call ClearArea
+		call ClearArea ;Execute PROC
 
-		call WordCheck
+		call WordCheck ;Check if the words match
 
 		xor ax, ax
 		mov al, [Score]
@@ -318,16 +323,22 @@ PROC WordDisplay
 		pop es         ;ES:BP
 
 
-		mov bl, 00000111b  ;Color attribute
-		mov cx, 9    ;Size of text
-    mov dl, 2    ;Column
-		mov dh, 2	   ;row
+		mov bl, 00000111b		;Color attribute
+		mov cx, 9 					;Size of text
+    mov dl, 2   			  ;Column
+		mov dh, 2	   				;row
 		mov bp, offset scoreTitle  ;Title location
-		int 10h      ;Execute
+		int 10h    							   ;Execute
 
 
 		call WordDisplay
 
+@@Exit:
+;---------=Set text mode
+		mov ax, 3h   ;Int requirement
+		int 10h      ;Execute
+
+		call PrintMenu
 
 ENDP WordDisplay
 ;------------------------
@@ -344,25 +355,25 @@ PROC NumberToString
 		pusha
 		xor cx, cx
 @@DigitLoop:
-;-----    Divide in 10
+;-----=Divide in 10
     mov bx, 10
     xor dx, dx
     div bx
 
     add dx, '0' ; Add the zero in ascii to the digit, to get the digit in ascii
 
-    push dx ; Save char in stack
-    inc cx ; Increase counter
+    push dx ; Save character in stack
+    inc cx ; One more loop [Using the loop command]
 
-;-----    Check if the number isn't 0
+;-----=Check if the number isn't 0
     cmp ax, 0
     jne @@DigitLoop
 
 @@DigitCharLoop:
-    pop dx ; Get char from stack
+    pop dx ; Get character to move into the variable
 
-    mov [byte si], dl ; Set in the string the character
-    inc si ; Move to next char
+    mov [byte si], dl ; Set the character in the string
+    inc si ; Move to next character
 
     loop @@DigitCharLoop
 
@@ -370,12 +381,12 @@ PROC NumberToString
     ret
 ENDP NumberToString
 ;------------------------------
-;WordCheck - Check if the word from user input matches the game word
+;WordCheck - Check if the word from user input matches the game word / If the player won
 ;------------------------------
 ;Input:
 ;				CurrentWord <- From user
 ;Output:
-;				INC Score \ Do nothing
+;				INC Score -> See if the player won \ Do nothing
 ;Registers:
 ;				AX, DI, CX
 ;------------------------------
@@ -414,8 +425,10 @@ PROC WordCheck
 		inc [Score]
 
 		mov al, [WordsCount]
+;-----=See if the player reached the final score
 		cmp [Score], al
 		je @@Winner
+;-----=Restore all Registers
 		pop cx
 		pop di
 		pop ax
@@ -523,7 +536,6 @@ ENDP ClearArea
 ;------------------------------
 PROC PrintTime
 		pusha
-
 ;---------=Print "Time"
 		dec [Time]
 		xor ax, ax
@@ -544,7 +556,6 @@ PROC PrintTime
 		int 10h     ;Execute
 
 		mov ah, 9
-
 		cmp [time], ah
 		jna @@Paint
 		popa
@@ -570,14 +581,14 @@ PROC PrintTime
 		call FailScreen
 ENDP PrintTime
 ;------------------------------
-;WinScreen
+;WinScreen - Display the win screen when the player wins
 ;------------------------------
 ;Input:
 ;
 ;Output:
 ;
 ;Registers:
-;
+;					CX, SI, AX, BL, DS, ES, BP
 ;------------------------------
 PROC WinScreen
 ;--------=Prep for printing the story pcx
@@ -661,7 +672,7 @@ PROC WinScreen
 		pop es         ;ES:BP
 
 ;---------=Print which difficulty
-		mov cx, 2    ;Size of text
+		mov cx, 1    ;Size of text
 		mov dl, 68    ;Column
 		mov dh, 12	   ;row
 		mov bp, offset DifficultyText  ;Title location
@@ -698,6 +709,7 @@ PROC WinScreen
 
 		call PressEnter
 
+;----------=Reset game values
 		mov [Mistakes], 0
 		mov [Score], 0
 		lea si, [ScoreTitle + 7]
@@ -713,14 +725,14 @@ PROC WinScreen
 		ret
 ENDP WinScreen
 ;------------------------------
-;
+;FailScreen - Display the fail screen when the player failes
 ;------------------------------
 ;Input:
 ;
 ;Output:
 ;
 ;Registers:
-;
+;					CX, SI, AX, BL, DS, ES, BP
 ;------------------------------
 PROC FailScreen
 ;--------=Prep for printing the story pcx
@@ -754,6 +766,7 @@ PROC FailScreen
 		mov [FinalScore], ax
 
 @@TimeIsZero:
+;--------=Cast all of the variables to their ascii value
 	  xor ax, ax
 		mov ax, [FinalScore]
 		lea si, [ScoreText]
@@ -817,13 +830,14 @@ PROC FailScreen
 		int 10h      ;Execute
 
 		call PressEnter
-
+;----------=Reset game values
 		mov [Mistakes], 0
 		mov [Score], 0
 		lea si, [ScoreTitle + 7]
 		mov [byte si], " "
 		inc si
 		mov [byte si], " "
+
 ;---------=Set text mode
 		mov ax, 3h   ;Int requirement
 		int 10h      ;Execute

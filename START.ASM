@@ -92,6 +92,10 @@ GameStart:
 
 
 Exit:
+;---------=Set text mode
+		mov ax, 3h   ;Int requirement
+		int 10h      ;Execute
+
     mov ax, 4C00h
     int 21h
 
@@ -113,9 +117,12 @@ ENDP ExitCall
 ;       AX,BX,CX,DXp
 ;------------------------------
 PROC PrintMenu
-
+		mov sp, 0100h
 		call ClearScreen ;Clear the screen before printing out the menu
 
+		mov ah, 01h
+		mov ch, 01
+		int 10h
 ;Prep for int 10h interupt that print with color
 ;-----------------------------------------------
 		mov ah,13h     ;Int requirement
@@ -259,16 +266,16 @@ PROC PrintRules
 		pop es         ;ES:BP
 
 		mov bl, 00001011b  ;Color attribute
-		mov cx, 321    ;Size of text
+		mov cx, 325    ;Size of text
     mov dl, 0       ;Column
-		mov dh, 8	   ;row
+		mov dh, 4	   ;row
 		mov bp, offset rules1  ;Title location
 		int 10h        ;Execute
 
 		mov bl, 00001110b  ;Color attribute
-		mov cx, 64     ;Size of text
+		mov cx, 216     ;Size of text
     mov dl, 0      ;Column
-		mov dh, 15	   ;row
+		mov dh, 12	   ;row
 		mov bp, offset rules2  ;Title location
 		int 10h        ;Execute
 

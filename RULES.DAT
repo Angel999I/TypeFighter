@@ -1,8 +1,18 @@
 rules1 db ""
-db "         Welcome to type fight.",13,10,13,10
-db "         You are an official type fighter, and your job is quite simple",13,10
-db "         You will have 60 seconds to type the words as fast as you can",13,10
-db "         a word will appear on the screen, and your job is to type The",13,10
-db "         word with no mistakes,the more words the more points you get",13,10,13,10
+db " Welcome to type fight.",13,10,13,10
+db " A group of bandits has attacked a nearby village, the villagers are",13,10
+db " asking for your help!. The bandits agreed to leave the village only",13,10
+db " if you beat them in a typing challenge, you will choose a difficulty ",13,10
+db " which determines how many words you need to complete ",13,10
+db " and the limited time you have"
 
-rules2 db "                                                      Good Luck"
+rules2 db ""
+db " Difficulty Information:",13,10,13,10
+db "    Challenge 1:",13,10,13,10
+db "    Time: 60 / Words: 15",13,10,13,10
+db "    Challenge 2:",13,10,13,10
+db "    Time: 45 / Words: 20",13,10,13,10
+db "    Challenge 3:",13,10,13,10
+db "    Time: 40 / Words: 25",13,10,13,10
+db "    Challenge 4:",13,10,13,10
+db "    Time: 30 / Words: 30"
