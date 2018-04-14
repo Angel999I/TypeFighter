@@ -87,14 +87,29 @@ PROC DifficultySelect
 		cmp ah, KEY_PAD_1
 		je @@KEYPAD1
 
+		cmp ah, KEY_1
+		je @@KEYPAD1
+
 		cmp ah, KEY_PAD_2
+		je @@KEYPAD2
+
+		cmp ah, KEY_2
 		je @@KEYPAD2
 
 		cmp ah, KEY_PAD_3
 		je @@KEYPAD3
 
+		cmp ah, KEY_3
+		je @@KEYPAD3
+
 		cmp ah, KEY_PAD_4
 		je @@KEYPAD4
+
+		cmp ah, KEY_4
+		je @@KEYPAD4
+
+		dec ah
+		jz @@Exit
 
 		jmp @@Again
 
@@ -122,6 +137,9 @@ PROC DifficultySelect
 
 @@Return:
 		ret
+
+@@Exit:
+		call ExitCall
 ENDP DifficultySelect
 ;------------------------------
 ;GameBoard - Display the game board
@@ -248,7 +266,7 @@ PROC WordDisplay
 		cmp al, DEL_KEY_CHARACTER
 		je @@Delete
 ;---------=Check if the character is ENTER
-		cmp al, ENTER_KEY_CHARACTER
+		cmp al, SPACE_KEY_CHARACTER
 		je @@Done
 ;---------=Check if the user pressed ESC
 		cmp al, 27
@@ -555,14 +573,17 @@ PROC PrintTime
 		mov bp, offset TimeTitle  ;Title location
 		int 10h     ;Execute
 
-		mov ah, 9
+		mov ah, 9   ;The number we need to compare to hide the 0
 		cmp [time], ah
 		jna @@Paint
+
 		popa
+
 		cmp [Time], 0
 		je @@Failed
 		ret
 
+;----------=Paint black color to hide the 0
 @@Paint:
 		mov [StartX], 287
 		mov [StartY], 8
@@ -605,21 +626,11 @@ PROC WinScreen
 
 		loop @@Again
 
-		call DrawPCX
+		call DrawPCX ;Draw the WinSc.pcx file
 
-;--------=Calculate Score
-		xor ax, ax
-		mov al, [Score]
-		mov [FinalScore], ax
-		mov al, [Time]
-		cmp al, 0
-		je @@TimeIsZero
-		mov bl, [Score]
-		mul bl
-		mov [FinalScore], ax
+		call CalculateScore
 
-
-@@TimeIsZero:
+;--------=Cast all of the variables to their ascii value
 		xor ax, ax
 		mov ax, [FinalScore]
 		lea si, [ScoreText]
@@ -642,6 +653,7 @@ PROC WinScreen
 		lea si, [MistakesText]
 		call NumberToString
 
+;--------=Change the difficuty text color by the level of difficulty
 		cmp [difficulty], 1
 		je @@Green
 		cmp [difficulty], 2
@@ -709,13 +721,7 @@ PROC WinScreen
 
 		call PressEnter
 
-;----------=Reset game values
-		mov [Mistakes], 0
-		mov [Score], 0
-		lea si, [ScoreTitle + 7]
-		mov [byte si], " "
-		inc si
-		mov [byte si], " "
+		call ResetValues
 ;---------=Set text mode
 		mov ax, 3h   ;Int requirement
 		int 10h      ;Execute
@@ -749,23 +755,11 @@ PROC FailScreen
 
 		loop @@Again
 
-		call DrawPCX
-
+		call DrawPCX ;Draw the FailS.pcx file
 
 		mov ah, [Score]
 		sub [WordsCount], ah
-;--------=Calculate Score
-		xor ax, ax
-		mov al, [Score]
-		mov [FinalScore], ax
-		mov al, [Time]
-		cmp al, 0
-		je @@TimeIsZero
-		mov bl, [Score]
-		mul bl
-		mov [FinalScore], ax
-
-@@TimeIsZero:
+		call CalculateScore
 ;--------=Cast all of the variables to their ascii value
 	  xor ax, ax
 		mov ax, [FinalScore]
@@ -781,6 +775,7 @@ PROC FailScreen
 		lea si, [WordsCountText]
 		call NumberToString
 
+;--------=Change the difficuty text color by the level of difficulty
 		cmp [difficulty], 1
 		je @@Green
 		cmp [difficulty], 2
@@ -830,13 +825,8 @@ PROC FailScreen
 		int 10h      ;Execute
 
 		call PressEnter
-;----------=Reset game values
-		mov [Mistakes], 0
-		mov [Score], 0
-		lea si, [ScoreTitle + 7]
-		mov [byte si], " "
-		inc si
-		mov [byte si], " "
+
+		call ResetValues
 
 ;---------=Set text mode
 		mov ax, 3h   ;Int requirement
@@ -845,3 +835,95 @@ PROC FailScreen
 
 		call PrintMenu
 ENDP FailScreen
+;------------------------------
+;ResetValues - Reset the game scores and variables
+;------------------------------
+;Input:
+;
+;Output:
+;					[Mistakes] <- " " [Mistakes] <- " "
+;Registers:
+;					SI
+;------------------------------
+PROC ResetValues
+;----------=Reset game values
+		mov [Mistakes], 0
+		mov [Score], 0
+		mov [FinalScore], 0
+		mov [Difficulty], 0
+
+;----------=Print spaces in all of the Variables
+		lea si, [ScoreTitle + 7]
+		mov [byte si], " "
+		inc si
+		mov [byte si], " "
+
+		lea si, [ScoreText]
+@@AgainScore:
+		mov [byte si], " "
+		inc si
+		cmp si, offset ScoreText + 5
+		jne @@AgainScore
+
+		lea si, [TimeText]
+@@AgainTime:
+		mov [byte si], " "
+		inc si
+		cmp si, offset TimeText + 2
+		jne @@AgainTime
+
+		lea si, [WordsCountText]
+@@AgainWordsCount:
+		mov [byte si], " "
+		inc si
+		cmp si, offset WordsCountText + 2
+		jne @@AgainWordsCount
+
+		lea si, [MistakesText]
+@@AgainMistake:
+		inc si
+		cmp si, offset MistakesText + 2
+		jne @@AgainMistake
+
+		lea si, [DifficultyText]
+@@AgainDifficulty:
+		inc si
+		cmp si, offset DifficultyText + 1
+		jne @@AgainDifficulty
+
+		ret
+ENDP ResetValues
+;------------------------------
+;CalculateScore - Calculate the end score game
+;------------------------------
+;Input:
+;				[Difficulty], [Score], [Time]
+;Output:
+;				[FinalScore] <- The calculated score
+;Registers:
+;				AX, BX, DX
+;------------------------------
+PROC CalculateScore
+		mov ah, [Difficulty]
+		push ax
+		add ah, [Difficulty]
+		mov [Difficulty], ah
+		;--------=Calculate Score
+		xor ax, ax
+		mov al, [Score]
+		mov [FinalScore], ax
+		mov al, [Time]
+		cmp al, 0
+		je @@TimeIsZero
+		mov bl, [Score]
+		mul bl
+		xor bx, bx
+		xor dx, dx
+		mov dl, [Difficulty]
+		mul	dx
+		mov [FinalScore], ax
+@@TimeIsZero:
+		pop ax
+		mov [Difficulty], ah
+		ret
+ENDP CalculateScore

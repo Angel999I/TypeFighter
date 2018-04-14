@@ -24,9 +24,14 @@
 		KEY_PAD_2 									equ 50h
 		KEY_PAD_3 									equ 51h
 		KEY_PAD_4 									equ 4Bh
+		KEY_1												equ 02h
+		KEY_2												equ 03h
+		KEY_3												equ 04h
+		KEY_4 											equ 05h
 		ENTER_KEY 									equ 1Ch
 		ENTER_KEY_CHARACTER 				equ 13
 		DEL_KEY_CHARACTER 					equ 8
+		SPACE_KEY_CHARACTER					equ ' '
 
 
 ;----------=Variables for the game itself
@@ -216,10 +221,19 @@ PROC KeyCheckMenu
 		cmp ah, KEY_PAD_1
 		je @@KEYPAD1
 
+		cmp ah, KEY_1
+		je @@KEYPAD1
+
 		cmp ah,KEY_PAD_2
 		je @@KEYPAD2
 
+		cmp ah, KEY_2
+		je @@KEYPAD2
+
 		cmp ah,KEY_PAD_3
+		je @@KEYPAD3
+
+		cmp ah, KEY_3
 		je @@KEYPAD3
 
 		dec ah
