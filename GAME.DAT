@@ -201,12 +201,31 @@ PROC WordDisplay
 		push cx     ;Save cx value
 		push ax     ;Save ax value
 
+;---------=Check if this is the first word in match
+		mov ax, 65535
+		cmp [GhostPointer], ax
+		jne @@NotFirst		;if its not continue as usual
+
+;---------=Generate start word and then generate the ghost word
 		xor ax,ax
-		mov cx, 56   ;Number of words, range of number
+		mov cx, 57   ;Number of words, range of number
 		call Random ;Get a random number
 
 		mov si, ax  ;Move the random number to si
 
+		xor ax,ax
+		call Random ;Get a random number
+		mov [GhostPointer], ax
+		jmp @@End
+
+@@NotFirst:
+		mov si, [GhostPointer]
+
+		xor ax,ax
+		call Random ;Get a random number
+		mov [GhostPointer], ax
+
+@@End:
 		pop ax      ;Get back ax value
 		pop cx      ;Get back cx value
 ;---------=Set cursor before printing
@@ -221,6 +240,20 @@ PROC WordDisplay
 		lea dx,[Words + si]
 		int 21h      ;execute
 
+;---------=Set cursor before printing
+		mov ah, 02h  ;Int requirement
+		mov dh, 19    ;Row
+		mov dl, 11	 ;Column
+		mov bh, 0    ;Page number
+		int 10h      ;Execute
+
+;---------=Print word for user to Type
+		push si
+		mov si, [GhostPointer]
+		mov ah, 09h  ;Int requirement
+		lea dx,[Words + si]
+		int 21h      ;execute
+		pop si
 
 ;---------=Set cursor before input
 		mov ah, 02h  ;Int requirement
@@ -308,7 +341,8 @@ PROC WordDisplay
 @@Done:
 		mov [byte si], '$'
 		popa
-;---------=initializing variables for PROC
+
+;---------=Cleaning the input line
 		mov [StartX], 0
 		mov [StartY], 191
 		mov [EndX], 320
@@ -317,13 +351,21 @@ PROC WordDisplay
 
 		call ClearArea ;Execute PROC
 
-;---------=initializing variables for PROC
+;---------=Cleaning the current word panel
 		mov [StartX], 84
 		mov [StartY], 77
-		mov [EndX], 244
+		mov [EndX], 159
 		mov [EndY], 91
 
 		call ClearArea ;Execute PROC
+
+;---------=Cleaning the next word panel
+		mov [StartX], 161
+		mov [StartY], 77
+		mov [EndX], 284
+		mov [EndY], 90
+
+	  call ClearArea ;Execute PROC
 
 		call WordCheck ;Check if the words match
 
@@ -355,6 +397,8 @@ PROC WordDisplay
 ;---------=Set text mode
 		mov ax, 3h   ;Int requirement
 		int 10h      ;Execute
+
+		call ResetValues
 
 		call PrintMenu
 
@@ -490,6 +534,38 @@ PROC Random
 
 		ret
 ENDP Random
+;------------------------------
+;MiddleText
+;------------------------------
+;Input:
+;
+;Output:
+;
+;Registers:
+;
+;------------------------------
+PROC MiddleText
+		pusha
+		xor cx, cx
+
+@@Again:
+		cmp [si], '$'
+		je @@End
+
+		inc ch
+		inc si
+		jmp @@Again
+
+@@End:
+		mov cl, 15
+		sub cl, ch
+		mov al, ch
+		mul 2
+		mov ch, al
+		sub cl, ch
+		
+		ret
+ENDP MiddleText
 ;------------------------------
 ;ClearArea - Paint a certain area in one color
 ;------------------------------
@@ -851,6 +927,7 @@ PROC ResetValues
 		mov [Score], 0
 		mov [FinalScore], 0
 		mov [Difficulty], 0
+		mov [GhostPointer], 65535
 
 ;----------=Print spaces in all of the Variables
 		lea si, [ScoreTitle + 7]
@@ -903,6 +980,9 @@ ENDP ResetValues
 ;Registers:
 ;				AX, BX, DX
 ;------------------------------
+;Formula: Score * TimeLeft * Difficulty
+;If each of them is zero it will be skiped
+
 PROC CalculateScore
 		mov ah, [Difficulty]
 		push ax
