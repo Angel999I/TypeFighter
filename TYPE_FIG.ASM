@@ -20,6 +20,8 @@
 	  include 										"intro.dat"
 		include 										"about.dat"
 
+		SPEC_START									equ 9121
+		SPEC_END										equ 1140
 		KEY_PAD_1 									equ 4Fh
 		KEY_PAD_2 									equ 50h
 		KEY_PAD_3 									equ 51h
@@ -54,12 +56,15 @@
 		FreqPointer									dw 0
 		FreqDirection								db 2
 		DifficultyText							db " "
-		Words 											db "word","$$$$$$","whale","$$$$$","terms","$$$$$","work","$$$$$$","focus","$$$$$","monday","$$$$","since","$$$$$","read","$$$$$$","tell","$$$$$$","warm","$$$$$$","long","$$$$$$","close","$$$$$"
-																db "remember","$$","thought","$$$","night","$$$$$","until","$$$$$","seven","$$$$$","head","$$$$$$","plane","$$$$$","reach","$$$$$","color","$$$$$","note","$$$$$$","need","$$$$$$","head","$$$$$$"
-																db "blue","$$$$$$","east","$$$$$$","should","$$$$","such","$$$$$$","young","$$$$$","travel","$$$$","age","$$$$$$$","though","$$$$","just","$$$$$$","heat","$$$$$$","rain","$$$$$$","voice","$$$$$"
+		Words 											db "word","$$$$$$","whale","$$$$$","terms","$$$$$","work","$$$$$$","focus","$$$$$","monday","$$$$","since","$$$$$","read","$$$$$$","tell","$$$$$$","warm","$$$$$$","long","$$$$$$","close","$$$$$" ;12
+																db "remember","$$","thought","$$$","night","$$$$$","until","$$$$$","seven","$$$$$","head","$$$$$$","plane","$$$$$","reach","$$$$$","color","$$$$$","note","$$$$$$","need","$$$$$$","head","$$$$$$" ;12
+																db "blue","$$$$$$","east","$$$$$$","should","$$$$","such","$$$$$$","young","$$$$$","travel","$$$$","age","$$$$$$$","though","$$$$","just","$$$$$$","heat","$$$$$$","rain","$$$$$$","voice","$$$$$" ;12
 																db "road","$$$$$$","the","$$$$$$$","and","$$$$$$$","need","$$$$$$","hot","$$$$$$$","free","$$$$$$","father","$$$$","red","$$$$$$$","even","$$$$$$","many","$$$$$$","nine","$$$$$$","six","$$$$$$$"
 																db "try","$$$$$$$","late","$$$$$$","interest","$$","act","$$$$$$$","fact","$$$$$$","direct","$$$$","all","$$$$$$$","all","$$$$$$$","cause","$$$$$","rest","$$$$$$","correct","$$$","hard","$$$$$$"
-																db "deadly","$$$$"
+																db "deadly","$$$$","update","$$$$","charity","$$$","disaster","$$","twin","$$$$$$","complain","$$","pill","$$$$$$","ordinary","$$","war","$$$$$$$","marine","$$$$","socialist","$","barrier","$$$"
+																db "fare","$$$$$$","tender","$$$$","constant","$$","native","$$$$","activity","$$","theme","$$$$$","marble","$$$$","curl","$$$$$$","lecture","$$$","window","$$$$","disappear","$","economy","$$$"
+																db "dialogue","$$","pick","$$$$$$","mile","$$$$$$","decay","$$$$$","suite","$$$$$","feed","$$$$$$","dip","$$$$$$$","slide","$$$$$","heal","$$$$$$","shoulder","$$","absence","$$$","large","$$$$$"
+																db "handy","$$$$$","guitar","$$$$","frighten","$$","treatment","$","fence","$$$$$","favour","$$$$","behead","$$$$","poll","$$$$$$","amber","$$$$$","soil","$$$$$$","church","$$$$","speaker","$$$"
 		Frequencies									dw 9121,8609,9126,7670,7239,6833,6449,6087,5746,5426,5119,4831,4560,4304,4063,3834,3619,3416,3224,3043,2873,2711,2559,2415,2280,2152,2031,1917,1809,1715,1612,1521,1436,1355,1292,1207,1140
 
 
@@ -295,7 +300,7 @@ PROC PrintRules
 		int 10h        ;Execute
 
 		mov bl, 00001110b  ;Color attribute
-		mov cx, 216     ;Size of text
+		mov cx, 240     ;Size of text
     mov dl, 0      ;Column
 		mov dh, 12	   ;row
 		mov bp, offset rules2  ;Title location

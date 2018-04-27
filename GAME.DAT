@@ -116,22 +116,22 @@ PROC DifficultySelect
 ;--------=Act by which button has been pressed
 @@KEYPAD1:
 		mov [Time], 60
-		mov [WordsCount], 15
+		mov [WordsCount], 20
 		mov [Difficulty], 1
 		jmp @@Return
 @@KEYPAD2:
   	mov [Time], 45
-		mov [WordsCount], 20
+		mov [WordsCount], 25
 		mov [Difficulty], 2
 		jmp @@Return
 @@KEYPAD3:
 		mov [Time], 40
-		mov [WordsCount], 25
+		mov [WordsCount], 30
 		mov [Difficulty], 3
 		jmp @@Return
 @@KEYPAD4:
 		mov [Time], 30
-		mov [WordsCount], 30
+		mov [WordsCount], 40
 		mov [Difficulty], 4
 		jmp @@Return
 
@@ -208,7 +208,7 @@ PROC WordDisplay
 
 ;---------=Generate start word and then generate the ghost word
 		xor ax,ax
-		mov cx, 57   ;Number of words, range of number
+		mov cx, 108   ;Number of words, range of number
 		call Random ;Get a random number
 
 		mov si, ax  ;Move the random number to si
@@ -225,6 +225,7 @@ PROC WordDisplay
 		call MiddleText
 		add [MiddleValue], 5
 		xor ax,ax
+		mov cx, 108
 		call Random ;Get a random number
 		mov [GhostPointer], ax
 
@@ -413,6 +414,8 @@ PROC WordDisplay
 		call WordDisplay
 
 @@Exit:
+		call StopSpeaker
+
 ;---------=Set text mode
 		mov ax, 3h   ;Int requirement
 		int 10h      ;Execute
@@ -725,9 +728,7 @@ PROC WinScreen
 
 		call CalculateScore
 
-		in  al, 61h
-		and al, 11111100b   ; Reset bits 1 and 0.
-		out 61h, al         ; Send new value.
+		call StopSpeaker
 ;--------=Cast all of the variables to their ascii value
 		xor ax, ax
 		mov ax, [FinalScore]
@@ -859,10 +860,7 @@ PROC FailScreen
 		sub [WordsCount], ah
 		call CalculateScore
 
-		xor ax, ax
-		in  al, 61h
-		and al, 11111100b   ; Reset bits 1 and 0.
-		out 61h, al         ; Send new value.
+		call StopSpeaker
 ;--------=Cast all of the variables to their ascii value
 	  xor ax, ax
 		mov ax, [FinalScore]
@@ -1016,6 +1014,7 @@ PROC CalculateScore
 		push ax
 		add ah, [Difficulty]
 		mov [Difficulty], ah
+
 		;--------=Calculate Score
 		xor ax, ax
 		mov al, [Score]
@@ -1036,31 +1035,36 @@ PROC CalculateScore
 		ret
 ENDP CalculateScore
 ;------------------------------
-;PlaySpeaker -
+;PlaySpeaker - Start the speaker, and play a sound from the sound spectrum [Frequencies]
 ;------------------------------
 ;Input:
 ;
 ;Output:
 ;
 ;Registers:
-;
+;				BX,AX
 ;------------------------------
 PROC PlaySpeaker
 		pusha
+
 		xor bx, bx
+;-------------= Prepare the speaker for a note
 		mov al, 182
 		out 43h, al
+;-------------= Get a note from our spectrum
 		mov si, [FreqPointer]
 		mov ax, [Frequencies + si]
-		cmp ax, 9121
+
+		cmp ax, SPEC_START ; Check if we at the start of the spectrum
 		jne @@Continue
-		mov [FreqDirection], 2
+		mov [FreqDirection], 2 ; If so, move forward
 		jmp @@End
 @@Continue:
-		cmp ax, 1140
+		cmp ax, SPEC_END ; Check if we at the end of the spectrum
 		jne @@End
-		mov [FreqDirection], -2
+		mov [FreqDirection], -2 ; If so, move backwards
 @@End:
+;-------------= Set the [FreqPointer] for next use
 		mov bl, [FreqDirection]
 		cmp bl, 2
 		jne @@Sub
@@ -1069,10 +1073,32 @@ PROC PlaySpeaker
 @@Sub:
 		sub [FreqPointer], 2
 @@Play:
+;-------------= Send the sound to the speakers
 		out 42h, al
 		mov al, ah
 		out 42h, al
+
 		popa
 
 		ret
 ENDP PlaySpeaker
+;------------------------------
+;StopSpeaker - Stop the speaker from playing
+;------------------------------
+;Input:
+;
+;Output:
+;
+;Registers:
+;				AX
+;------------------------------
+PROC StopSpeaker
+		pusha
+		xor ax, ax
+;-------------= Set the last 2 bytes to 0 to stop the speaker
+		in  al, 61h
+		and al, 11111100b   ; Reset bits 1 and 0.
+		out 61h, al         ; Send new value.
+		popa
+		ret
+ENDP StopSpeaker

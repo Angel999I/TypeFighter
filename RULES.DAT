@@ -8,11 +8,11 @@ db " and the limited time you have"
 
 rules2 db ""
 db " Difficulty Information:",13,10,13,10
-db "    Challenge 1:",13,10,13,10
-db "    Time: 60 / Words: 15",13,10,13,10
-db "    Challenge 2:",13,10,13,10
-db "    Time: 45 / Words: 20",13,10,13,10
-db "    Challenge 3:",13,10,13,10
-db "    Time: 40 / Words: 25",13,10,13,10
-db "    Challenge 4:",13,10,13,10
-db "    Time: 30 / Words: 30"
+db "    Challenge 1: EASY",13,10,13,10
+db "    Time: 60 / Words: 20",13,10,13,10
+db "    Challenge 2: NORMAL",13,10,13,10
+db "    Time: 45 / Words: 25",13,10,13,10
+db "    Challenge 3: HARD",13,10,13,10
+db "    Time: 40 / Words: 30",13,10,13,10
+db "    Challenge 4: Z-HARD",13,10,13,10
+db "    Time: 30 / Words: 40"
