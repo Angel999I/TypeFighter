@@ -212,6 +212,8 @@ PROC WordDisplay
 		call Random ;Get a random number
 
 		mov si, ax  ;Move the random number to si
+		call MiddleText
+		add [MiddleValue], 5
 
 		xor ax,ax
 		call Random ;Get a random number
@@ -220,7 +222,8 @@ PROC WordDisplay
 
 @@NotFirst:
 		mov si, [GhostPointer]
-
+		call MiddleText
+		add [MiddleValue], 5
 		xor ax,ax
 		call Random ;Get a random number
 		mov [GhostPointer], ax
@@ -231,7 +234,7 @@ PROC WordDisplay
 ;---------=Set cursor before printing
 		mov ah, 02h  ;Int requirement
 		mov dh, 10    ;Row
-		mov dl, 11	 ;Column
+		mov dl, [MiddleValue]	 ;Column
 		mov bh, 0    ;Page number
 		int 10h      ;Execute
 
@@ -240,16 +243,20 @@ PROC WordDisplay
 		lea dx,[Words + si]
 		int 21h      ;execute
 
+		push si
+		mov si, [GhostPointer]
+		call MiddleText
+		add [MiddleValue], 20
+
 ;---------=Set cursor before printing
 		mov ah, 02h  ;Int requirement
-		mov dh, 19    ;Row
-		mov dl, 11	 ;Column
+		mov dh, 10    ;Row
+		mov dl, [MiddleValue]	 ;Column
 		mov bh, 0    ;Page number
 		int 10h      ;Execute
 
 ;---------=Print word for user to Type
-		push si
-		mov si, [GhostPointer]
+
 		mov ah, 09h  ;Int requirement
 		lea dx,[Words + si]
 		int 21h      ;execute
@@ -265,6 +272,16 @@ PROC WordDisplay
 ;      Input string from user
 ;----------------------------------
 		pusha		;Store registers
+
+		push ax
+
+		xor ax, ax
+		call PlaySpeaker
+		in  al, 61h
+		or  al, 00000011b
+		out 61h, al
+
+		pop ax
 
 		lea si, [CurrentWord]		;SI <- Pointer of currentword
 
@@ -315,6 +332,8 @@ PROC WordDisplay
 		mov dl, al
 		int 21h
 
+		call PlaySpeaker
+
 		jmp @@Again
 @@Delete:
 ;---------=Print DEL
@@ -352,10 +371,10 @@ PROC WordDisplay
 		call ClearArea ;Execute PROC
 
 ;---------=Cleaning the current word panel
-		mov [StartX], 84
+		mov [StartX], 41
 		mov [StartY], 77
 		mov [EndX], 159
-		mov [EndY], 91
+		mov [EndY], 90
 
 		call ClearArea ;Execute PROC
 
@@ -549,7 +568,7 @@ PROC MiddleText
 		xor cx, cx
 
 @@Again:
-		cmp [si], '$'
+		cmp [words + si], '$'
 		je @@End
 
 		inc ch
@@ -557,13 +576,13 @@ PROC MiddleText
 		jmp @@Again
 
 @@End:
+
 		mov cl, 15
 		sub cl, ch
-		mov al, ch
-		mul 2
-		mov ch, al
-		sub cl, ch
-		
+		shr cl, 1
+		mov [MiddleValue], cl
+
+		popa
 		ret
 ENDP MiddleText
 ;------------------------------
@@ -706,6 +725,9 @@ PROC WinScreen
 
 		call CalculateScore
 
+		in  al, 61h
+		and al, 11111100b   ; Reset bits 1 and 0.
+		out 61h, al         ; Send new value.
 ;--------=Cast all of the variables to their ascii value
 		xor ax, ax
 		mov ax, [FinalScore]
@@ -836,6 +858,11 @@ PROC FailScreen
 		mov ah, [Score]
 		sub [WordsCount], ah
 		call CalculateScore
+
+		xor ax, ax
+		in  al, 61h
+		and al, 11111100b   ; Reset bits 1 and 0.
+		out 61h, al         ; Send new value.
 ;--------=Cast all of the variables to their ascii value
 	  xor ax, ax
 		mov ax, [FinalScore]
@@ -928,6 +955,8 @@ PROC ResetValues
 		mov [FinalScore], 0
 		mov [Difficulty], 0
 		mov [GhostPointer], 65535
+		mov [FreqPointer], 0
+		mov [FreqDirection], 2
 
 ;----------=Print spaces in all of the Variables
 		lea si, [ScoreTitle + 7]
@@ -982,7 +1011,6 @@ ENDP ResetValues
 ;------------------------------
 ;Formula: Score * TimeLeft * Difficulty
 ;If each of them is zero it will be skiped
-
 PROC CalculateScore
 		mov ah, [Difficulty]
 		push ax
@@ -1007,3 +1035,44 @@ PROC CalculateScore
 		mov [Difficulty], ah
 		ret
 ENDP CalculateScore
+;------------------------------
+;PlaySpeaker -
+;------------------------------
+;Input:
+;
+;Output:
+;
+;Registers:
+;
+;------------------------------
+PROC PlaySpeaker
+		pusha
+		xor bx, bx
+		mov al, 182
+		out 43h, al
+		mov si, [FreqPointer]
+		mov ax, [Frequencies + si]
+		cmp ax, 9121
+		jne @@Continue
+		mov [FreqDirection], 2
+		jmp @@End
+@@Continue:
+		cmp ax, 1140
+		jne @@End
+		mov [FreqDirection], -2
+@@End:
+		mov bl, [FreqDirection]
+		cmp bl, 2
+		jne @@Sub
+		add [FreqPointer], 2
+		jmp @@Play
+@@Sub:
+		sub [FreqPointer], 2
+@@Play:
+		out 42h, al
+		mov al, ah
+		out 42h, al
+		popa
+
+		ret
+ENDP PlaySpeaker

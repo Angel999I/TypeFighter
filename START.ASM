@@ -49,13 +49,19 @@
 		MistakesText								db "  "
 		PrevSecond 									db 0
 		Difficulty 									db 0
-		GhostPointer								dw 65535 
+		GhostPointer								dw 65535
+		MiddleValue									db 0
+		FreqPointer									dw 0
+		FreqDirection								db 2
 		DifficultyText							db " "
 		Words 											db "word","$$$$$$","whale","$$$$$","terms","$$$$$","work","$$$$$$","focus","$$$$$","monday","$$$$","since","$$$$$","read","$$$$$$","tell","$$$$$$","warm","$$$$$$","long","$$$$$$","close","$$$$$"
 																db "remember","$$","thought","$$$","night","$$$$$","until","$$$$$","seven","$$$$$","head","$$$$$$","plane","$$$$$","reach","$$$$$","color","$$$$$","note","$$$$$$","need","$$$$$$","head","$$$$$$"
 																db "blue","$$$$$$","east","$$$$$$","should","$$$$","such","$$$$$$","young","$$$$$","travel","$$$$","age","$$$$$$$","though","$$$$","just","$$$$$$","heat","$$$$$$","rain","$$$$$$","voice","$$$$$"
 																db "road","$$$$$$","the","$$$$$$$","and","$$$$$$$","need","$$$$$$","hot","$$$$$$$","free","$$$$$$","father","$$$$","red","$$$$$$$","even","$$$$$$","many","$$$$$$","nine","$$$$$$","six","$$$$$$$"
 																db "try","$$$$$$$","late","$$$$$$","interest","$$","act","$$$$$$$","fact","$$$$$$","direct","$$$$","all","$$$$$$$","all","$$$$$$$","cause","$$$$$","rest","$$$$$$","correct","$$$","hard","$$$$$$"
+																db "deadly","$$$$"
+		Frequencies									dw 9121,8609,9126,7670,7239,6833,6449,6087,5746,5426,5119,4831,4560,4304,4063,3834,3619,3416,3224,3043,2873,2711,2559,2415,2280,2152,2031,1917,1809,1715,1612,1521,1436,1355,1292,1207,1140
+
 
 
 ;42
