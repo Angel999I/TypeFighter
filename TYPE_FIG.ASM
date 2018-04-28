@@ -59,11 +59,11 @@
 		Words 											db "word","$$$$$$","whale","$$$$$","terms","$$$$$","work","$$$$$$","focus","$$$$$","monday","$$$$","since","$$$$$","read","$$$$$$","tell","$$$$$$","warm","$$$$$$","long","$$$$$$","close","$$$$$" ;12
 																db "remember","$$","thought","$$$","night","$$$$$","until","$$$$$","seven","$$$$$","head","$$$$$$","plane","$$$$$","reach","$$$$$","color","$$$$$","note","$$$$$$","need","$$$$$$","head","$$$$$$" ;12
 																db "blue","$$$$$$","east","$$$$$$","should","$$$$","such","$$$$$$","young","$$$$$","travel","$$$$","age","$$$$$$$","though","$$$$","just","$$$$$$","heat","$$$$$$","rain","$$$$$$","voice","$$$$$" ;12
-																db "road","$$$$$$","the","$$$$$$$","and","$$$$$$$","need","$$$$$$","hot","$$$$$$$","free","$$$$$$","father","$$$$","red","$$$$$$$","even","$$$$$$","many","$$$$$$","nine","$$$$$$","six","$$$$$$$"
+																db "road","$$$$$$","the","$$$$$$$","atomiqu","$$$","need","$$$$$$","hot","$$$$$$$","free","$$$$$$","father","$$$$","red","$$$$$$$","even","$$$$$$","many","$$$$$$","nine","$$$$$$","six","$$$$$$$"
 																db "try","$$$$$$$","late","$$$$$$","interest","$$","act","$$$$$$$","fact","$$$$$$","direct","$$$$","all","$$$$$$$","all","$$$$$$$","cause","$$$$$","rest","$$$$$$","correct","$$$","hard","$$$$$$"
 																db "deadly","$$$$","update","$$$$","charity","$$$","disaster","$$","twin","$$$$$$","complain","$$","pill","$$$$$$","ordinary","$$","war","$$$$$$$","marine","$$$$","socialist","$","barrier","$$$"
 																db "fare","$$$$$$","tender","$$$$","constant","$$","native","$$$$","activity","$$","theme","$$$$$","marble","$$$$","curl","$$$$$$","lecture","$$$","window","$$$$","disappear","$","economy","$$$"
-																db "dialogue","$$","pick","$$$$$$","mile","$$$$$$","decay","$$$$$","suite","$$$$$","feed","$$$$$$","dip","$$$$$$$","slide","$$$$$","heal","$$$$$$","shoulder","$$","absence","$$$","large","$$$$$"
+																db "dialogue","$$","pick","$$$$$$","xactshot","$$","decay","$$$$$","suite","$$$$$","feed","$$$$$$","dip","$$$$$$$","slide","$$$$$","heal","$$$$$$","shoulder","$$","absence","$$$","large","$$$$$"
 																db "handy","$$$$$","guitar","$$$$","frighten","$$","treatment","$","fence","$$$$$","favour","$$$$","behead","$$$$","poll","$$$$$$","amber","$$$$$","soil","$$$$$$","church","$$$$","speaker","$$$"
 		Frequencies									dw 9121,8609,9126,7670,7239,6833,6449,6087,5746,5426,5119,4831,4560,4304,4063,3834,3619,3416,3224,3043,2873,2711,2559,2415,2280,2152,2031,1917,1809,1715,1612,1521,1436,1355,1292,1207,1140
 
@@ -103,8 +103,11 @@ Start:
 
 GameStart:
 ;---------=Show the story scene and the Game Board
+		call MenuSound
 		call Story
+		call MenuSound
 		call DifficultySelect
+		call MenuSound
 		call GameBoard
 
 
@@ -122,6 +125,7 @@ Exit:
 
 ;This precedure exit the program, neutralizing the jmp distance
 PROC ExitCall
+		call MenuSound
 		jmp Exit
 ENDP ExitCall
 ;------------------------------
@@ -135,6 +139,7 @@ ENDP ExitCall
 ;       AX,BX,CX,DXp
 ;------------------------------
 PROC PrintMenu
+		call MenuSound
 		mov sp, 0100h
 		call ClearScreen ;Clear the screen before printing out the menu
 
@@ -285,6 +290,7 @@ ENDP KeyCheckMenu
 ;			AX,DX,BH,CX
 ;------------------------------
 PROC PrintRules
+		call MenuSound
 
 		mov ah,13h     ;Int requirement
 		mov bh,0       ;Page number
@@ -355,6 +361,7 @@ ENDP ClearScreen
 ;					AX,BX,CX,DX
 ;------------------------------
 PROC PrintAbout
+		call MenuSound
 		mov ah,13h     ;Int requirement
 		mov bh,0       ;Page number
 		mov al, 1	     ;Mode
@@ -394,6 +401,61 @@ PROC PrintAbout
 
 		ret
 ENDP PrintAbout
+;------------------------------
+;MenuSound - Play a short sound
+;------------------------------
+;Input:
+;
+;Output:
+;
+;Registers:
+;
+;------------------------------
+PROC MenuSound
+		pusha
+		mov al, 182
+		out 43h, al
+
+		mov ax, 4063
+
+		out 42h, al
+		mov al, ah
+		out 42h, al
+
+		in al, 61h
+		or al, 00000011b
+		out 61h, al
+
+		mov cx, 2
+@@NewLoop:
+		mov bx, 65535
+@@Again:
+		dec bx
+		jnz @@Again
+		dec cx
+		jnz @@NewLoop
+
+		mov ax, 2415
+
+		out 42h, al
+		mov al, ah
+		out 42h, al
+
+		mov cx, 2
+@@NewLoop1:
+		mov bx, 65535
+@@Again1:
+		dec bx
+		jnz @@Again1
+		dec cx
+		jnz @@NewLoop1
+
+		in al, 61h
+		and al, 11111100b
+		out 61h, al
+		popa
+		ret
+ENDP MenuSound
 
 ;------------------------------
 ;PressEnter - Wait for user to press enter
