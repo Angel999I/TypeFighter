@@ -139,7 +139,7 @@ PROC DifficultySelect
 		ret
 
 @@Exit:
-		call ExitCall
+		call PrintMenu
 ENDP DifficultySelect
 ;------------------------------
 ;GameBoard - Display the game board
@@ -541,11 +541,14 @@ ENDP WordCheck
 ;
 ;------------------------------
 PROC Random
+@@IsZero:
 		in ax, 40h  ;Get a random number from timer 0 - 255
 
 		xor dx, dx  ;Reset dx for div action
 		div cx      ;Div ax/cx
-
+		
+		cmp dx, 0
+		je @@IsZero
 		xor cx, cx  ;Reset cx
 		xor ax, ax  ;Reset ax
 		mov cx, dx  ;Move the remainder to cl / part of cx
