@@ -1,7 +1,7 @@
 
  Start  Stop   Length Name               Class
 
- 00000H 009A0H 009A1H _TEXT              CODE
+ 00000H 009A5H 009A6H _TEXT              CODE
  009B0H 016DFH 00D30H _DATA              DATA
  016E0H 017DFH 00100H STACK              STACK
  017E0H 1168FH 0FEB0H FILEBUF            
