@@ -20,23 +20,29 @@
 	  include 										"intro.dat"
 		include 										"about.dat"
 
+
 		SPEC_START									equ 9121
-		SPEC_END										equ 1140
+		SPEC_END										equ 2559
 		KEY_PAD_1 									equ 4Fh
 		KEY_PAD_2 									equ 50h
 		KEY_PAD_3 									equ 51h
 		KEY_PAD_4 									equ 4Bh
+		KEY_PAD_5										equ 4Ch
 		KEY_1												equ 02h
 		KEY_2												equ 03h
 		KEY_3												equ 04h
 		KEY_4 											equ 05h
+		KEY_5												equ 06h
 		ENTER_KEY 									equ 1Ch
 		ENTER_KEY_CHARACTER 				equ 13
 		DEL_KEY_CHARACTER 					equ 8
 		SPACE_KEY_CHARACTER					equ ' '
+		ESC_KEY_CHARACTER						equ 27
+		F1_KEY_CHARACTER						equ 0
 
 
 ;----------=Variables for the game itself
+		SpeakerPower								db 1
 		ScoreTitle 									db "Score:   "
 		TimeTitle 									db "Time:   "
 		CurrentWord 								db 43 dup (?)
@@ -89,6 +95,7 @@
 		File3 											db "Visual\DifSc.pcx"
 		File4												db "Visual\WinSc.pcx"
 		File5												db "Visual\FailS.pcx"
+		File6												db "Visual\60Sec.pcx"
 
 		CODESEG
 Start:

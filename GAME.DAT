@@ -108,6 +108,12 @@ PROC DifficultySelect
 		cmp ah, KEY_4
 		je @@KEYPAD4
 
+		cmp ah, KEY_PAD_5
+		je @@KEYPAD5
+
+		cmp ah, KEY_5
+		je @@KEYPAD5
+
 		dec ah
 		jz @@Exit
 
@@ -131,14 +137,24 @@ PROC DifficultySelect
 		jmp @@Return
 @@KEYPAD4:
 		mov [Time], 30
-		mov [WordsCount], 40
+		mov [WordsCount], 45
 		mov [Difficulty], 4
+		jmp @@Return
+
+@@KEYPAD5:
+		mov [Time], 60
+		mov [WordsCount], 255
+		mov [Difficulty], 0
 		jmp @@Return
 
 @@Return:
 		ret
 
 @@Exit:
+;---------=Set text mode
+		mov ax, 3h   ;Int requirement
+		int 10h      ;Execute
+
 		call PrintMenu
 ENDP DifficultySelect
 ;------------------------------
@@ -197,6 +213,7 @@ ENDP GameBoard
 ;
 ;------------------------------
 PROC WordDisplay
+		mov sp, 0100h ; Reset the stack
 ;---------=Random a number
 		push cx     ;Save cx value
 		push ax     ;Save ax value
@@ -274,16 +291,22 @@ PROC WordDisplay
 ;----------------------------------
 		pusha		;Store registers
 
-		push ax
+
+		cmp [SpeakerPower], 0 ; If the speaker power switch is off skip this step
+		je @@SpeakerOff
+
+;----------= Ready up the speaker
+;----------= And enter the starting sound
+		push ax ; Save ax value
 
 		xor ax, ax
-		call PlaySpeaker
+		call PlaySpeaker ; Send the note to the speaker
 		in  al, 61h
-		or  al, 00000011b
-		out 61h, al
+		or  al, 00000011b ; Turn on the last 2 bytes to start the speaker
+		out 61h, al	; Send the value back to the speaker
 
-		pop ax
-
+		pop ax ; Pop ax value
+@@SpeakerOff:
 		lea si, [CurrentWord]		;SI <- Pointer of currentword
 
 @@Again:
@@ -313,6 +336,9 @@ PROC WordDisplay
 		mov ah, 7h
 		int 21h
 
+;---------=Check if the character is F1
+		cmp al, F1_KEY_CHARACTER
+		je @@SpeakerPowerSwitch
 ;---------=Check if the character is DEL
 		cmp al, DEL_KEY_CHARACTER
 		je @@Delete
@@ -320,7 +346,7 @@ PROC WordDisplay
 		cmp al, SPACE_KEY_CHARACTER
 		je @@Done
 ;---------=Check if the user pressed ESC
-		cmp al, 27
+		cmp al, ESC_KEY_CHARACTER
 		je @@Exit
 ;---------=Check if the user entered a long word
 		cmp si, offset CurrentWord + 39
@@ -333,16 +359,14 @@ PROC WordDisplay
 		mov dl, al
 		int 21h
 
-		call PlaySpeaker
-
-		jmp @@Again
+		jmp @@SpeakerPower
 @@Delete:
 ;---------=Print DEL
 		mov ah, 02h
 		mov dl, DEL_KEY_CHARACTER
 		int 21h
 ;---------=Print Space
-		mov dl, ' '
+		mov dl, SPACE_KEY_CHARACTER
 		int 21h
 ;---------=Print DEL
 		mov dl, DEL_KEY_CHARACTER
@@ -357,9 +381,60 @@ PROC WordDisplay
 		dec si
 		jmp @@Again
 
-;---------=Clear the word typing space
+;-------------------------------------------------
+;-   Switch the [SpeakerPower] value on or off   -
+;-------------------------------------------------
+@@SpeakerPowerSwitch:
+		cmp [SpeakerPower], 1 ; If the speaker is on, turn it off
+		je @@ToZero
+
+;------------= If the speaker is off, turn it on
+		mov [SpeakerPower], 1 ; Switch it on
+
+;----------= Ready up the speaker
+;----------= And enter the starting sound
+		push ax ; Save ax value
+
+		xor ax, ax
+		call PlaySpeaker ; Send the note to the speaker
+		in  al, 61h
+		or  al, 00000011b ; Turn on the last 2 bytes to start the speaker
+		out 61h, al	; Send the value back to the speaker
+
+		pop ax ; Pop ax value
+
+;---------=Clean keyboard buffer
+		mov ah, 0Ch
+		mov al, 0
+		int 21h
+
+		jmp @@Again
+@@ToZero:
+		mov [SpeakerPower], 0 ; Switch it off
+		call StopSpeaker ; Stop the speaker
+
+;---------=Clean keyboard buffer
+		mov ah, 0Ch
+		mov al, 0
+		int 21h
+
+		jmp @@Again
+
+;-------------------------------------------------
+;-   Switch the [SpeakerPower] value on or off   -
+;-------------------------------------------------
+@@SpeakerPower:
+		cmp [SpeakerPower], 0 ; If the speaker is off, dont play a sound
+		je @@Again
+;-----------= If the speaker is on, play a sound
+		call PlaySpeaker
+		jmp @@Again
+
+;------------------------------------------------------------
+;-   Clean the words space, determines victory and points   -
+;------------------------------------------------------------
 @@Done:
-		mov [byte si], '$'
+		mov [byte si], '$' ; Add '$' at the end of the word
 		popa
 
 ;---------=Cleaning the input line
@@ -411,18 +486,18 @@ PROC WordDisplay
 		int 10h    							   ;Execute
 
 
-		call WordDisplay
+		call WordDisplay ; Repeat the process
 
 @@Exit:
-		call StopSpeaker
+		call StopSpeaker ; Stop the speaker
 
 ;---------=Set text mode
 		mov ax, 3h   ;Int requirement
 		int 10h      ;Execute
 
-		call ResetValues
+		call ResetValues ; Reset all values
 
-		call PrintMenu
+		call PrintMenu ; Print out the menu
 
 ENDP WordDisplay
 ;------------------------
@@ -546,9 +621,10 @@ PROC Random
 
 		xor dx, dx  ;Reset dx for div action
 		div cx      ;Div ax/cx
-		
+
 		cmp dx, 0
 		je @@IsZero
+
 		xor cx, cx  ;Reset cx
 		xor ax, ax  ;Reset ax
 		mov cx, dx  ;Move the remainder to cl / part of cx
@@ -563,30 +639,32 @@ ENDP Random
 ;MiddleText
 ;------------------------------
 ;Input:
-;
+;						[Words]
 ;Output:
-;
+;						Middle out the text in the gameboard area
 ;Registers:
-;
+;						CX, SI
 ;------------------------------
 PROC MiddleText
 		pusha
 		xor cx, cx
 
+
+;----------> Count the amount of letters
 @@Again:
 		cmp [words + si], '$'
 		je @@End
 
-		inc ch
-		inc si
+		inc ch ; Increase by 1 the amount of letters
+		inc si ; Next step in pointer
 		jmp @@Again
 
 @@End:
 
 		mov cl, 15
-		sub cl, ch
-		shr cl, 1
-		mov [MiddleValue], cl
+		sub cl, ch ; 15 - Letters count
+		shr cl, 1 ; * 2
+		mov [MiddleValue], cl ; Save the middle value
 
 		popa
 		ret
@@ -700,7 +778,11 @@ PROC PrintTime
 		je @@Failed
 		ret
 @@Failed:
+		cmp [difficulty], 0
+		je @@60Sec
 		call FailScreen
+@@60Sec:
+		call SixTeenSecScreen
 ENDP PrintTime
 ;------------------------------
 ;WinScreen - Display the win screen when the player wins
@@ -939,6 +1021,75 @@ PROC FailScreen
 
 		call PrintMenu
 ENDP FailScreen
+;------------------------------
+;60SecScreen - Display the 60 seconds end screen
+;------------------------------
+;Input:
+;
+;Output:
+;
+;Registers:
+;							CX, SI, DS, ES, DX
+;------------------------------
+PROC SixTeenSecScreen
+;--------=Prep for printing the story pcx
+		mov [StartX], 0  ;X location on the screen
+		mov [StartY], 0 ;Y location on the screen
+
+		mov cx, 16 ;Loop value for replacing the FileName variable
+		mov si, 0 ;Reset si, used as pointer
+@@Again:
+;--------=Copy the file name from StoryText to FileName
+		mov ah, [File6 + si]
+		mov [FileName + si], ah
+		inc si
+
+		loop @@Again
+
+		call DrawPCX ; Print the image
+
+		call StopSpeaker
+
+		xor ax, ax
+		mov al, [Score]
+		lea si, [ScoreText]
+		call NumberToString
+
+		mov al, [Mistakes]
+		lea si, [MistakesText]
+		call NumberToString
+
+;---------=Prep for int 10h 13h
+		mov ah,13h     ;Int requirement
+		mov bh,0       ;Page number
+		mov al, 0	     ;Mode
+		push ds		     ;ES as datasegment
+		pop es         ;ES:BP
+;---------=Print extra time
+		mov bl, 47
+		mov cx, 2    ;Size of text
+	  mov dl, 16    ;Column
+		mov dh, 9	   ;row
+		mov bp, offset ScoreText  ;Title location
+		int 10h      ;Execute
+;---------=Print Amount of mistakes
+		mov cx, 2    ;Size of text
+		mov dl, 68    ;Column
+		mov dh, 9	   ;row
+		mov bp, offset MistakesText  ;Title location
+		int 10h      ;Execute
+
+		call PressEnter
+
+		call ResetValues
+;---------=Set text mode
+		mov ax, 3h   ;Int requirement
+		int 10h      ;Execute
+
+;---------=Print the title and the options
+		call PrintMenu
+		ret
+ENDP SixTeenSecScreen
 ;------------------------------
 ;ResetValues - Reset the game scores and variables
 ;------------------------------
