@@ -10,152 +10,151 @@
 ;Input:
 ;
 ;Output:
-;					Story.pcx is displayed
+;          Story.pcx is displayed
 ;Registers:
-;			  	CX,SI,AX
+;          CX,SI,AX
 ;------------------------------
 PROC Story
 ;--------=Prep for printing the story pcx
-		mov [StartX], 0  ;X location on the screen
-		mov [StartY], 0 ;Y location on the screen
+    mov [StartX], 0  ;X location on the screen
+    mov [StartY], 0 ;Y location on the screen
 
-		mov cx, 16 ;Loop value for replacing the FileName variable
-		mov si, 0 ;Reset si, used as pointer
+    mov cx, 16 ;Loop value for replacing the FileName variable
+    mov si, 0 ;Reset si, used as pointer
 @@Again:
 ;--------=Copy the file name from StoryText to FileName
-		mov ah, [File1 + si]
-		mov [FileName + si], ah
-		inc si
+    mov ah, [File1 + si]
+    mov [FileName + si], ah
+    inc si
 
-		loop @@Again
+    loop @@Again
 
 ;-------=Set graphics mode
-		mov ax, 13h  ;Int requirement
+    mov ax, 13h  ;Int requirement
     int 10h      ;Execute
 
 
-		call DrawPCX ;This precedure display the pcx
+    call DrawPCX ;This precedure display the pcx
 
 
 ;-------=Press enter to continue
-		call PressEnter
-		ret
+    call PressEnter
+    ret
 
 ENDP Story
 
 ;------------------------------
-;DifficultySelect - Show the difiiculty Select screen
+;DifficultySelect - Show the difficulty Select screen
 ;------------------------------
 ;Input:
 ;
 ;Output:
-;				DifSc.pcx is displayed
+;        DifSc.pcx is displayed
 ;Registers:
 ;
 ;------------------------------
 PROC DifficultySelect
 ;--------=Prep for printing the story pcx
-		mov [StartX], 0  ;X location on the screen
-		mov [StartY], 0 ;Y location on the screen
+    mov [StartX], 0  ;X location on the screen
+    mov [StartY], 0 ;Y location on the screen
 
-		mov cx, 16 ;Loop value for replacing the FileName variable
-		mov si, 0 ;Reset si, used as pointer
+    mov cx, 16 ;Loop value for replacing the FileName variable
+    mov si, 0 ;Reset si, used as pointer
 
 @@Name:
 ;--------=Copy the file name from StoryText to FileName
-		mov ah, [File3 + si]
-		mov [FileName + si], ah
-		inc si
+    mov ah, [File3 + si]
+    mov [FileName + si], ah
+    inc si
 
-		loop @@Name
+    loop @@Name
 
-		call DrawPCX ;This precedure display the pcx
+    call DrawPCX ;This precedure display the pcx
 
 
 @@Again:
 ;--------=Clear keyboard buffer
-		mov ah,0ch
-		mov al,0h
-		int 21h
+    mov ah,0ch
+    mov al,0h
+    int 21h
 
 
 ;--------=Read char from keyboard buffer (int 16h)
-		mov ah, 0h  ;Int requirement
-		int 16h     ;Execute
+    mov ah, 0h  ;Int requirement
+    int 16h     ;Execute
 
 ;--------=Check which button has been pressed
-		cmp ah, KEY_PAD_1
-		je @@KEYPAD1
+    cmp ah, KEY_PAD_1
+    je @@KEYPAD1
 
-		cmp ah, KEY_1
-		je @@KEYPAD1
+    cmp ah, KEY_1
+    je @@KEYPAD1
 
-		cmp ah, KEY_PAD_2
-		je @@KEYPAD2
+    cmp ah, KEY_PAD_2
+    je @@KEYPAD2
 
-		cmp ah, KEY_2
-		je @@KEYPAD2
+    cmp ah, KEY_2
+    je @@KEYPAD2
 
-		cmp ah, KEY_PAD_3
-		je @@KEYPAD3
+    cmp ah, KEY_PAD_3
+    je @@KEYPAD3
 
-		cmp ah, KEY_3
-		je @@KEYPAD3
+    cmp ah, KEY_3
+    je @@KEYPAD3
 
-		cmp ah, KEY_PAD_4
-		je @@KEYPAD4
+    cmp ah, KEY_PAD_4
+    je @@KEYPAD4
 
-		cmp ah, KEY_4
-		je @@KEYPAD4
+    cmp ah, KEY_4
+    je @@KEYPAD4
 
-		cmp ah, KEY_PAD_5
-		je @@KEYPAD5
+    cmp ah, KEY_PAD_5
+    je @@KEYPAD5
 
-		cmp ah, KEY_5
-		je @@KEYPAD5
+    cmp ah, KEY_5
+    je @@KEYPAD5
 
-		dec ah
-		jz @@Exit
+    dec ah
+    jz @@Exit
 
-		jmp @@Again
+    jmp @@Again
 
 ;--------=Act by which button has been pressed
 @@KEYPAD1:
-		mov [Time], 60
-		mov [WordsCount], 20
-		mov [Difficulty], 1
-		jmp @@Return
+    mov [Time], 60
+    mov [WordsCount], 20
+    mov [Difficulty], 1
+    jmp @@Return
 @@KEYPAD2:
-  	mov [Time], 45
-		mov [WordsCount], 25
-		mov [Difficulty], 2
-		jmp @@Return
+    mov [Time], 45
+    mov [WordsCount], 25
+    mov [Difficulty], 2
+    jmp @@Return
 @@KEYPAD3:
-		mov [Time], 40
-		mov [WordsCount], 30
-		mov [Difficulty], 3
-		jmp @@Return
+    mov [Time], 40
+    mov [WordsCount], 30
+    mov [Difficulty], 3
+    jmp @@Return
 @@KEYPAD4:
-		mov [Time], 30
-		mov [WordsCount], 45
-		mov [Difficulty], 4
-		jmp @@Return
-
+    mov [Time], 30
+    mov [WordsCount], 45
+    mov [Difficulty], 4
+    jmp @@Return
 @@KEYPAD5:
-		mov [Time], 60
-		mov [WordsCount], 255
-		mov [Difficulty], 0
-		jmp @@Return
+    mov [Time], 60
+    mov [WordsCount], 255
+    mov [Difficulty], 0
+    jmp @@Return
 
 @@Return:
-		ret
+    ret
 
 @@Exit:
 ;---------=Set text mode
-		mov ax, 3h   ;Int requirement
-		int 10h      ;Execute
+    mov ax, 3h   ;Int requirement
+    int 10h      ;Execute
 
-		call PrintMenu
+    call PrintMenu
 ENDP DifficultySelect
 ;------------------------------
 ;GameBoard - Display the game board
@@ -163,341 +162,341 @@ ENDP DifficultySelect
 ;Input:
 ;
 ;Output:
-;				GameB.pcx is displayed
+;        GameB.pcx is displayed
 ;Registers:
-;				CX,SI
+;        CX,SI
 ;------------------------------
 PROC GameBoard
 ;--------=Prep for printing the story pcx
-		mov [StartX], 0  ;X location on the screen
-		mov [StartY], 0 ;Y location on the screen
+    mov [StartX], 0  ;X location on the screen
+    mov [StartY], 0 ;Y location on the screen
 
-		mov cx, 16 ;Loop value for replacing the FileName variable
-		mov si, 0 ;Reset si, used as pointer
+    mov cx, 16 ;Loop value for replacing the FileName variable
+    mov si, 0 ;Reset si, used as pointer
 @@Again:
 ;--------=Copy the file name from StoryText to FileName
-		mov ah, [File2 + si]
-		mov [FileName + si], ah
-		inc si
+    mov ah, [File2 + si]
+    mov [FileName + si], ah
+    inc si
 
-		loop @@Again
+    loop @@Again
 
-		call DrawPCX ;This precedure display the pcx
+    call DrawPCX ;This precedure display the pcx
 
 ;---------=Prep for int 10h 13h
-		mov ah,13h     ;Int requirement
-		mov bh,0       ;Page number
-		mov al, 0	     ;Mode
-	  push ds		     ;ES as datasegment
-		pop es         ;ES:BP
+    mov ah,13h     ;Int requirement
+    mov bh,0       ;Page number
+    mov al, 0       ;Mode
+    push ds         ;ES as datasegment
+    pop es         ;ES:BP
 
 ;---------=Print "Score" title
-		mov bl, 00000111b  ;Color attribute
-		mov cx, 9    ;Size of text
+    mov bl, 00000111b  ;Color attribute
+    mov cx, 9    ;Size of text
     mov dl, 2    ;Column
-		mov dh, 2	   ;row
-		mov bp, offset scoreTitle  ;Title location
-		int 10h      ;Execute
+    mov dh, 2     ;row
+    mov bp, offset scoreTitle  ;Title location
+    int 10h      ;Execute
 
-		call WordDisplay
-		ret
+    call WordDisplay
+    ret
 ENDP GameBoard
 ;------------------------------
-;WordDisplay
+;WordDisplay - Display the words for the user to type, get input from the user
 ;------------------------------
 ;Input:
 ;
 ;Output:
 ;
 ;Registers:
-;
+;            Everything
 ;------------------------------
 PROC WordDisplay
-		mov sp, 0100h ; Reset the stack
+    mov sp, 0100h ; Reset the stack
 ;---------=Random a number
-		push cx     ;Save cx value
-		push ax     ;Save ax value
+    push cx     ;Save cx value
+    push ax     ;Save ax value
 
 ;---------=Check if this is the first word in match
-		mov ax, 65535
-		cmp [GhostPointer], ax
-		jne @@NotFirst		;if its not continue as usual
+    mov ax, 65535
+    cmp [GhostPointer], ax
+    jne @@NotFirst    ;if its not continue as usual
 
 ;---------=Generate start word and then generate the ghost word
-		xor ax,ax
-		mov cx, 108   ;Number of words, range of number
-		call Random ;Get a random number
+    xor ax,ax
+    mov cx, 108   ;Number of words, range of number
+    call Random ;Get a random number
 
-		mov si, ax  ;Move the random number to si
-		call MiddleText
-		add [MiddleValue], 5
+    mov si, ax  ;Move the random number to si
+    call MiddleText
+    add [MiddleValue], 5 ; First bracket value
 
-		xor ax,ax
-		call Random ;Get a random number
-		mov [GhostPointer], ax
-		jmp @@End
+    xor ax,ax
+    call Random ;Get a random number
+    mov [GhostPointer], ax
+    jmp @@End
 
 @@NotFirst:
-		mov si, [GhostPointer]
-		call MiddleText
-		add [MiddleValue], 5
-		xor ax,ax
-		mov cx, 108
-		call Random ;Get a random number
-		mov [GhostPointer], ax
+    mov si, [GhostPointer]
+    call MiddleText
+    add [MiddleValue], 5 ; First bracket value
+    xor ax,ax
+    mov cx, 108 ; Amount of words
+    call Random ;Get a random number
+    mov [GhostPointer], ax
 
 @@End:
-		pop ax      ;Get back ax value
-		pop cx      ;Get back cx value
+    pop ax      ;Get back ax value
+    pop cx      ;Get back cx value
 ;---------=Set cursor before printing
-		mov ah, 02h  ;Int requirement
-		mov dh, 10    ;Row
-		mov dl, [MiddleValue]	 ;Column
-		mov bh, 0    ;Page number
-		int 10h      ;Execute
+    mov ah, 02h  ;Int requirement
+    mov dh, 10    ;Row
+    mov dl, [MiddleValue]   ;Column
+    mov bh, 0    ;Page number
+    int 10h      ;Execute
 
 ;---------=Print word for user to Type
-		mov ah, 09h  ;Int requirement
-		lea dx,[Words + si]
-		int 21h      ;execute
+    mov ah, 09h  ;Int requirement
+    lea dx,[Words + si]
+    int 21h      ;execute
 
-		push si
-		mov si, [GhostPointer]
-		call MiddleText
-		add [MiddleValue], 20
+    push si
+    mov si, [GhostPointer]
+    call MiddleText
+    add [MiddleValue], 20 ; Second bracket value
 
 ;---------=Set cursor before printing
-		mov ah, 02h  ;Int requirement
-		mov dh, 10    ;Row
-		mov dl, [MiddleValue]	 ;Column
-		mov bh, 0    ;Page number
-		int 10h      ;Execute
+    mov ah, 02h  ;Int requirement
+    mov dh, 10    ;Row
+    mov dl, [MiddleValue]   ;Column
+    mov bh, 0    ;Page number
+    int 10h      ;Execute
 
 ;---------=Print word for user to Type
-
-		mov ah, 09h  ;Int requirement
-		lea dx,[Words + si]
-		int 21h      ;execute
-		pop si
+    mov ah, 09h  ;Int requirement
+    lea dx,[Words + si]
+    int 21h      ;execute
+    pop si
 
 ;---------=Set cursor before input
-		mov ah, 02h  ;Int requirement
-		mov dh, 24   ;Row
-		mov dl, 0		 ;Column
-		mov bh, 0    ;Page number
-		int 10h      ;Execute
+    mov ah, 02h  ;Int requirement
+    mov dh, 24   ;Row
+    mov dl, 0     ;Column
+    mov bh, 0    ;Page number
+    int 10h      ;Execute
 ;----------------------------------
 ;      Input string from user
 ;----------------------------------
-		pusha		;Store registers
+    pusha    ;Store registers
 
 
-		cmp [SpeakerPower], 0 ; If the speaker power switch is off skip this step
-		je @@SpeakerOff
+    cmp [SpeakerPower], 0 ; If the speaker power switch is off skip this step
+    je @@SpeakerOff
 
 ;----------= Ready up the speaker
 ;----------= And enter the starting sound
-		push ax ; Save ax value
+    push ax ; Save ax value
 
-		xor ax, ax
-		call PlaySpeaker ; Send the note to the speaker
-		in  al, 61h
-		or  al, 00000011b ; Turn on the last 2 bytes to start the speaker
-		out 61h, al	; Send the value back to the speaker
+    xor ax, ax
+    call PlaySpeaker ; Send the note to the speaker
+    in  al, 61h ; Get value from speaker
+    or  al, 00000011b ; Turn on the last 2 bytes to start the speaker
+    out 61h, al  ; Send the value back to the speaker
 
-		pop ax ; Pop ax value
+    pop ax ; Pop ax value
 @@SpeakerOff:
-		lea si, [CurrentWord]		;SI <- Pointer of currentword
+    lea si, [CurrentWord]    ;SI <- Pointer of currentword
 
 @@Again:
 ;---------=Read clock variables
-		mov ah, 02h
-		int 1Ah
+    mov ah, 02h
+    int 1Ah
 
 ;---------=Check if a seond has past
-		cmp dh, [PrevSecond]
-		je @@Continue
+    cmp dh, [PrevSecond]
+    je @@Continue
 
-		mov [PrevSecond], dh  ;Mov new second to PrevSecond variable
-		call PrintTime				;Print the time on screen
+    mov [PrevSecond], dh  ;Mov new second to PrevSecond variable
+    call PrintTime        ;Print the time on screen
 
 @@Continue:
 
 ;---------=Check if there is a character in buffer
-		mov ah, 0Bh
-		int 21h
-		cmp al, 0FFh
-		je @@AddCharacter
+    mov ah, 0Bh
+    int 21h
+    cmp al, 0FFh
+    je @@AddCharacter
 
-		jmp @@Again  ;If not, do the process again
+    jmp @@Again  ;If not, do the process again
 
 @@AddCharacter:
 ;---------=Take character from buffer
-		mov ah, 7h
-		int 21h
+    mov ah, 7h
+    int 21h
 
 ;---------=Check if the character is F1
-		cmp al, F1_KEY_CHARACTER
-		je @@SpeakerPowerSwitch
+    cmp al, F1_KEY_CHARACTER
+    je @@SpeakerPowerSwitch
 ;---------=Check if the character is DEL
-		cmp al, DEL_KEY_CHARACTER
-		je @@Delete
+    cmp al, DEL_KEY_CHARACTER
+    je @@Delete
 ;---------=Check if the character is ENTER
-		cmp al, SPACE_KEY_CHARACTER
-		je @@Done
+    cmp al, SPACE_KEY_CHARACTER
+    je @@Done
 ;---------=Check if the user pressed ESC
-		cmp al, ESC_KEY_CHARACTER
-		je @@Exit
+    cmp al, ESC_KEY_CHARACTER
+    je @@Exit
 ;---------=Check if the user entered a long word
-		cmp si, offset CurrentWord + 39
-		je @@Again
+    cmp si, offset CurrentWord + 39
+    je @@Again
 ;---------=Move the letter into the currentword variable
-		mov [si], al
-		inc si
+    mov [si], al
+    inc si
 ;---------=Draw the letter
-		mov ah, 02h
-		mov dl, al
-		int 21h
+    mov ah, 02h
+    mov dl, al
+    int 21h
 
-		jmp @@SpeakerPower
+    jmp @@SpeakerPower
 @@Delete:
 ;---------=Print DEL
-		mov ah, 02h
-		mov dl, DEL_KEY_CHARACTER
-		int 21h
+    mov ah, 02h
+    mov dl, DEL_KEY_CHARACTER
+    int 21h
 ;---------=Print Space
-		mov dl, SPACE_KEY_CHARACTER
-		int 21h
+    mov dl, SPACE_KEY_CHARACTER
+    int 21h
 ;---------=Print DEL
-		mov dl, DEL_KEY_CHARACTER
-		int 21h
+    mov dl, DEL_KEY_CHARACTER
+    int 21h
 ;---------=Clean keyboard buffer
-		mov ah, 0Ch
-		mov al, 0
-		int 21h
+    mov ah, 0Ch
+    mov al, 0
+    int 21h
 
-		cmp si, offset CurrentWord ; See if you are at the start of the line
-		je @@Again
-		dec si
-		jmp @@Again
+    cmp si, offset CurrentWord ; See if you are at the start of the line
+    je @@Again
+    dec si
+    jmp @@Again
 
 ;-------------------------------------------------
 ;-   Switch the [SpeakerPower] value on or off   -
 ;-------------------------------------------------
 @@SpeakerPowerSwitch:
-		cmp [SpeakerPower], 1 ; If the speaker is on, turn it off
-		je @@ToZero
+    cmp [SpeakerPower], 1 ; If the speaker is on, turn it off
+    je @@ToZero
 
 ;------------= If the speaker is off, turn it on
-		mov [SpeakerPower], 1 ; Switch it on
+    mov [SpeakerPower], 1 ; Switch it on
 
 ;----------= Ready up the speaker
 ;----------= And enter the starting sound
-		push ax ; Save ax value
+    push ax ; Save ax value
 
-		xor ax, ax
-		call PlaySpeaker ; Send the note to the speaker
-		in  al, 61h
-		or  al, 00000011b ; Turn on the last 2 bytes to start the speaker
-		out 61h, al	; Send the value back to the speaker
+    xor ax, ax
+    call PlaySpeaker ; Send the note to the speaker
+    in  al, 61h
+    or  al, 00000011b ; Turn on the last 2 bytes to start the speaker
+    out 61h, al  ; Send the value back to the speaker
 
-		pop ax ; Pop ax value
+    pop ax ; Pop ax value
 
 ;---------=Clean keyboard buffer
-		mov ah, 0Ch
-		mov al, 0
-		int 21h
+    mov ah, 0Ch
+    mov al, 0
+    int 21h
 
-		jmp @@Again
+    jmp @@Again
 @@ToZero:
-		mov [SpeakerPower], 0 ; Switch it off
-		call StopSpeaker ; Stop the speaker
+    mov [SpeakerPower], 0 ; Switch it off
+    call StopSpeaker ; Stop the speaker
 
 ;---------=Clean keyboard buffer
-		mov ah, 0Ch
-		mov al, 0
-		int 21h
+    mov ah, 0Ch
+    mov al, 0
+    int 21h
 
-		jmp @@Again
+    jmp @@Again
 
 ;-------------------------------------------------
 ;-   Switch the [SpeakerPower] value on or off   -
 ;-------------------------------------------------
 @@SpeakerPower:
-		cmp [SpeakerPower], 0 ; If the speaker is off, dont play a sound
-		je @@Again
+    cmp [SpeakerPower], 0 ; If the speaker is off, dont play a sound
+    je @@Again
 ;-----------= If the speaker is on, play a sound
-		call PlaySpeaker
-		jmp @@Again
+    call PlaySpeaker
+    jmp @@Again
 
 ;------------------------------------------------------------
 ;-   Clean the words space, determines victory and points   -
 ;------------------------------------------------------------
 @@Done:
-		mov [byte si], '$' ; Add '$' at the end of the word
-		popa
+    mov [byte si], '$' ; Add '$' at the end of the word
+    popa
 
 ;---------=Cleaning the input line
-		mov [StartX], 0
-		mov [StartY], 191
-		mov [EndX], 320
-		mov [EndY], 200
-		mov [Color], 0
+    mov [StartX], 0
+    mov [StartY], 191
+    mov [EndX], 320
+    mov [EndY], 200
+    mov [Color], 0
 
-		call ClearArea ;Execute PROC
+    call ClearArea ;Execute PROC
 
 ;---------=Cleaning the current word panel
-		mov [StartX], 41
-		mov [StartY], 77
-		mov [EndX], 159
-		mov [EndY], 90
+    mov [StartX], 41
+    mov [StartY], 77
+    mov [EndX], 159
+    mov [EndY], 90
 
-		call ClearArea ;Execute PROC
+    call ClearArea ;Execute PROC
 
 ;---------=Cleaning the next word panel
-		mov [StartX], 161
-		mov [StartY], 77
-		mov [EndX], 284
-		mov [EndY], 90
+    mov [StartX], 161
+    mov [StartY], 77
+    mov [EndX], 284
+    mov [EndY], 90
 
-	  call ClearArea ;Execute PROC
+    call ClearArea ;Execute PROC
 
-		call WordCheck ;Check if the words match
+    call WordCheck ;Check if the words match
 
-		xor ax, ax
-		mov al, [Score]
-		lea si, [ScoreTitle + 7]
+;----------=Convert the score number to ASCII form
+    xor ax, ax
+    mov al, [Score]
+    lea si, [ScoreTitle + 7]
 
-		call NumberToString
+    call NumberToString
 
 ;---------=Prep for int 10h 13h
-		mov ah,13h     ;Int requirement
-		mov bh,0       ;Page number
-		mov al, 0	     ;Mode
-	  push ds		     ;ES as datasegment
-		pop es         ;ES:BP
+    mov ah,13h     ;Int requirement
+    mov bh,0       ;Page number
+    mov al, 0       ;Mode
+    push ds         ;ES as datasegment
+    pop es         ;ES:BP
 
 
-		mov bl, 00000111b		;Color attribute
-		mov cx, 9 					;Size of text
-    mov dl, 2   			  ;Column
-		mov dh, 2	   				;row
-		mov bp, offset scoreTitle  ;Title location
-		int 10h    							   ;Execute
+    mov bl, 00000111b    ;Color attribute
+    mov cx, 9           ;Size of text
+    mov dl, 2           ;Column
+    mov dh, 2             ;row
+    mov bp, offset scoreTitle  ;Title location
+    int 10h                     ;Execute
 
 
-		call WordDisplay ; Repeat the process
+    call WordDisplay ; Repeat the process
 
 @@Exit:
-		call StopSpeaker ; Stop the speaker
+    call StopSpeaker ; Stop the speaker
 
 ;---------=Set text mode
-		mov ax, 3h   ;Int requirement
-		int 10h      ;Execute
+    mov ax, 3h   ;Int requirement
+    int 10h      ;Execute
 
-		call ResetValues ; Reset all values
+    call ResetValues ; Reset all values
 
-		call PrintMenu ; Print out the menu
+    call PrintMenu ; Print out the menu
 
 ENDP WordDisplay
 ;------------------------
@@ -511,8 +510,8 @@ ENDP WordDisplay
 ;       AX, BX, SI, DX, CX
 ;------------------------
 PROC NumberToString
-		pusha
-		xor cx, cx
+    pusha
+    xor cx, cx
 @@DigitLoop:
 ;-----=Divide in 10
     mov bx, 10
@@ -536,253 +535,253 @@ PROC NumberToString
 
     loop @@DigitCharLoop
 
-		popa
+    popa
     ret
 ENDP NumberToString
 ;------------------------------
 ;WordCheck - Check if the word from user input matches the game word / If the player won
 ;------------------------------
 ;Input:
-;				CurrentWord <- From user
+;        CurrentWord <- From user
 ;Output:
-;				INC Score -> See if the player won \ Do nothing
+;        INC Score -> See if the player won \ Do nothing
 ;Registers:
-;				AX, DI, CX
+;        AX, DI, CX
 ;------------------------------
 PROC WordCheck
 ;---------=Store Registers
-		push ax
-		push di
-		push cx
+    push ax
+    push di
+    push cx
 
-		xor cx,cx ;Reset cx
+    xor cx,cx ;Reset cx
 
-		mov di, 0 ;Start position of the word in CurrentWord variable
+    mov di, 0 ;Start position of the word in CurrentWord variable
 
 @@Again:
 
-		mov al, [byte CurrentWord + di] ;AL <- byte CurrentWord
-		mov ah, [byte Words + si]				;AH <- byte Words
+    mov al, [byte CurrentWord + di] ;AL <- byte CurrentWord
+    mov ah, [byte Words + si]        ;AH <- byte Words
 
-		cmp al, '$'			;See if the currentword reached its end
-		je @@HalfTrue
+    cmp al, '$'      ;See if the currentword reached its end
+    je @@HalfTrue
 
-		cmp ah,al				;Compare the letters
-		jne @@False
+    cmp ah,al        ;Compare the letters
+    jne @@False
 
-		inc di					;INC DI <- CurrentWord pointer
-		inc si					;INC SI <- Words pointer
+    inc di          ;INC DI <- CurrentWord pointer
+    inc si          ;INC SI <- Words pointer
 
-		jmp @@Again
+    jmp @@Again
 
 @@HalfTrue:
-		cmp ah, '$'			;See if the task word reached its end
-		je @@True
-		jmp @@False
+    cmp ah, '$'      ;See if the task word reached its end
+    je @@True
+    jmp @@False
 
 @@True:
-		inc [Score]
+    inc [Score]
 
-		mov al, [WordsCount]
+    mov al, [WordsCount]
 ;-----=See if the player reached the final score
-		cmp [Score], al
-		je @@Winner
+    cmp [Score], al
+    je @@Winner
 ;-----=Restore all Registers
-		pop cx
-		pop di
-		pop ax
-		ret
+    pop cx
+    pop di
+    pop ax
+    ret
 @@False:
-		inc [Mistakes]
+    inc [Mistakes]
 ;-----=Restore all Registers
-		pop cx
-		pop di
-		pop ax
+    pop cx
+    pop di
+    pop ax
 
-		ret
+    ret
 
 @@Winner:
-		call WinScreen
+    call WinScreen
 
 ENDP WordCheck
 ;------------------------------
 ;Random - Generate a random number in a certain range
 ;------------------------------
 ;Input:
-;					cx -> ranges
+;          cx -> ranges
 ;Output:
-;					A random number
+;          A random number
 ;Registers:
 ;
 ;------------------------------
 PROC Random
 @@IsZero:
-		in ax, 40h  ;Get a random number from timer 0 - 255
+    in ax, 40h  ;Get a random number from timer 0 - 255
 
-		xor dx, dx  ;Reset dx for div action
-		div cx      ;Div ax/cx
+    xor dx, dx  ;Reset dx for div action
+    div cx      ;Div ax/cx
 
-		cmp dx, 0
-		je @@IsZero
+    cmp dx, 0
+    je @@IsZero
 
-		xor cx, cx  ;Reset cx
-		xor ax, ax  ;Reset ax
-		mov cx, dx  ;Move the remainder to cl / part of cx
-		mov al, 10  ;The number we going to use the mul with
+    xor cx, cx  ;Reset cx
+    xor ax, ax  ;Reset ax
+    mov cx, dx  ;Move the remainder to cl / part of cx
+    mov al, 10  ;The number we going to use the mul with
 
-		xor dx,dx   ;Reset dx for mul action
-		mul cx			;Mul ax*cx
+    xor dx,dx   ;Reset dx for mul action
+    mul cx      ;Mul ax*cx
 
-		ret
+    ret
 ENDP Random
 ;------------------------------
-;MiddleText
+;MiddleText - Middle out the text in their bracket
 ;------------------------------
 ;Input:
-;						[Words]
+;            [Words]
 ;Output:
-;						Middle out the text in the gameboard area
+;            Middle out the text in the gameboard area
 ;Registers:
-;						CX, SI
+;            CX, SI
 ;------------------------------
 PROC MiddleText
-		pusha
-		xor cx, cx
+    pusha
+    xor cx, cx
 
 
 ;----------> Count the amount of letters
 @@Again:
-		cmp [words + si], '$'
-		je @@End
+    cmp [words + si], '$'
+    je @@End
 
-		inc ch ; Increase by 1 the amount of letters
-		inc si ; Next step in pointer
-		jmp @@Again
+    inc ch ; Increase by 1 the amount of letters
+    inc si ; Next step in pointer
+    jmp @@Again
 
 @@End:
 
-		mov cl, 15
-		sub cl, ch ; 15 - Letters count
-		shr cl, 1 ; * 2
-		mov [MiddleValue], cl ; Save the middle value
+    mov cl, 15
+    sub cl, ch ; 15 - Letters count
+    shr cl, 1 ; * 2
+    mov [MiddleValue], cl ; Save the middle value
 
-		popa
-		ret
+    popa
+    ret
 ENDP MiddleText
 ;------------------------------
 ;ClearArea - Paint a certain area in one color
 ;------------------------------
 ;Input:
-;					[StartX] <- Start of x value, [StartY] <- Start of y value, [EndX] <- End of x value, [EndY] <- End of y value
+;          [StartX] <- Start of x value, [StartY] <- Start of y value, [EndX] <- End of x value, [EndY] <- End of y value
 ;Output:
-;					An area of one color
+;          An area of one color
 ;Registers:
-;					AX, ES
+;          AX, ES
 ;------------------------------
 PROC ClearArea
-		push ax           ;Save ax value
-		mov ax, 0A000h		;0A000h Start of video memory
-		mov es, ax				;ES <- 0A000
+    push ax           ;Save ax value
+    mov ax, 0A000h    ;0A000h Start of video memory
+    mov es, ax        ;ES <- 0A000
 
-		mov ax, [StartY]  ;AX <- Start of Y location
-		mov [Y], ax				;Y <- AX
-		mov ax, [StartX]	;AX <- Start of X location
-		mov [X], ax				;X <- AX
+    mov ax, [StartY]  ;AX <- Start of Y location
+    mov [Y], ax        ;Y <- AX
+    mov ax, [StartX]  ;AX <- Start of X location
+    mov [X], ax        ;X <- AX
 
 
 
 @@Again:
-		call PutPixel     ;PutPixel [Change pixel color at [X] and [Y] position]
+    call PutPixel     ;PutPixel [Change pixel color at [X] and [Y] position]
 
-		inc [X]           ;X++ Next pixel
+    inc [X]           ;X++ Next pixel
 
-		mov ax, [EndX]    ;AX <- End of x value
-		cmp [X], ax				;X ? AX
-		je @@NewLine			;Start a new line
+    mov ax, [EndX]    ;AX <- End of x value
+    cmp [X], ax        ;X ? AX
+    je @@NewLine      ;Start a new line
 
-		jmp @@Again				;If not continue
+    jmp @@Again        ;If not continue
 
 
 @@NewLine:
-		mov ax, [StartX]	;AX <- Start of X value
-		mov [X], ax				;X <- AX
+    mov ax, [StartX]  ;AX <- Start of X value
+    mov [X], ax        ;X <- AX
 
-		inc [Y]						;Y++ Next line
+    inc [Y]            ;Y++ Next line
 
-		mov ax, [EndY]   	;AX <- End of Y value
-		cmp [Y], ax				;Y ? AX
-		je @@End					;End of the paint process
+    mov ax, [EndY]     ;AX <- End of Y value
+    cmp [Y], ax        ;Y ? AX
+    je @@End          ;End of the paint process
 
-		jmp @@Again				;If not continue
+    jmp @@Again        ;If not continue
 
 @@End:
 
-		pop ax						;Get back ax value
+    pop ax            ;Get back ax value
 
-		ret
+    ret
 ENDP ClearArea
 ;------------------------------
 ;PrintTime - Print the time title and the [Time] variable next to it
 ;------------------------------
 ;Input:
-;				[Time] <- Amount of time left
+;        [Time] <- Amount of time left
 ;Output:
 ;
 ;Registers:
-;				AX, SI, BH, DS, ES, CX, DX, BP
+;        AX, SI, BH, DS, ES, CX, DX, BP
 ;------------------------------
 PROC PrintTime
-		pusha
+    pusha
 ;---------=Print "Time"
-		dec [Time]
-		xor ax, ax
-		mov al, [Time]
-		lea si, [TimeTitle + 6]
-		call NumberToString
+    dec [Time]
+    xor ax, ax
+    mov al, [Time]
+    lea si, [TimeTitle + 6]
+    call NumberToString
 ;---------=Print "Time" Title
-		mov ah,13h     ;Int requirement
-		mov bh,0       ;Page number
-		mov al, 0	     ;Mode
-		push ds		     ;ES as datasegment
-		pop es         ;ES:BP
+    mov ah,13h     ;Int requirement
+    mov bh,0       ;Page number
+    mov al, 0       ;Mode
+    push ds         ;ES as datasegment
+    pop es         ;ES:BP
 
-		mov cx, 8   ;Word length
-		mov dl, 29  ;Column
-		mov dh, 2   ;Row
-		mov bp, offset TimeTitle  ;Title location
-		int 10h     ;Execute
+    mov cx, 8   ;Word length
+    mov dl, 29  ;Column
+    mov dh, 2   ;Row
+    mov bp, offset TimeTitle  ;Title location
+    int 10h     ;Execute
 
-		mov ah, 9   ;The number we need to compare to hide the 0
-		cmp [time], ah
-		jna @@Paint
+    mov ah, 9   ;The number we need to compare to hide the 0
+    cmp [time], ah
+    jna @@Paint
 
-		popa
+    popa
 
-		cmp [Time], 0
-		je @@Failed
-		ret
+    cmp [Time], 0
+    je @@Failed
+    ret
 
 ;----------=Paint black color to hide the 0
 @@Paint:
-		mov [StartX], 287
-		mov [StartY], 8
-		mov [EndX], 303
-		mov [EndY], 30
-		mov [color], 0
+    mov [StartX], 287
+    mov [StartY], 8
+    mov [EndX], 303
+    mov [EndY], 30
+    mov [color], 0
 
-		call ClearArea
+    call ClearArea
 
-		popa
+    popa
 
-		cmp [Time], 0
-		je @@Failed
-		ret
+    cmp [Time], 0
+    je @@Failed
+    ret
 @@Failed:
-		cmp [difficulty], 0
-		je @@60Sec
-		call FailScreen
+    cmp [difficulty], 0
+    je @@60Sec
+    call FailScreen
 @@60Sec:
-		call SixTeenSecScreen
+    call SixTeenSecScreen
 ENDP PrintTime
 ;------------------------------
 ;WinScreen - Display the win screen when the player wins
@@ -792,127 +791,127 @@ ENDP PrintTime
 ;Output:
 ;
 ;Registers:
-;					CX, SI, AX, BL, DS, ES, BP
+;          CX, SI, AX, BL, DS, ES, BP
 ;------------------------------
 PROC WinScreen
 ;--------=Prep for printing the story pcx
-		mov [StartX], 0  ;X location on the screen
-		mov [StartY], 0 ;Y location on the screen
+    mov [StartX], 0  ;X location on the screen
+    mov [StartY], 0 ;Y location on the screen
 
-		mov cx, 16 ;Loop value for replacing the FileName variable
-		mov si, 0 ;Reset si, used as pointer
+    mov cx, 16 ;Loop value for replacing the FileName variable
+    mov si, 0 ;Reset si, used as pointer
 @@Again:
 ;--------=Copy the file name from StoryText to FileName
-		mov ah, [File4 + si]
-		mov [FileName + si], ah
-		inc si
+    mov ah, [File4 + si]
+    mov [FileName + si], ah
+    inc si
 
-		loop @@Again
+    loop @@Again
 
-		call DrawPCX ;Draw the WinSc.pcx file
+    call DrawPCX ;Draw the WinSc.pcx file
 
-		call CalculateScore
+    call CalculateScore
 
-		call StopSpeaker
+    call StopSpeaker
 ;--------=Cast all of the variables to their ascii value
-		xor ax, ax
-		mov ax, [FinalScore]
-		lea si, [ScoreText]
-		call NumberToString
+    xor ax, ax
+    mov ax, [FinalScore]
+    lea si, [ScoreText]
+    call NumberToString
 
-		xor ax, ax
-		mov al, [Time]
-		lea si, [TimeText]
-		call NumberToString
+    xor ax, ax
+    mov al, [Time]
+    lea si, [TimeText]
+    call NumberToString
 
-		mov al, [WordsCount]
-		lea si, [WordsCountText]
-		call NumberToString
+    mov al, [WordsCount]
+    lea si, [WordsCountText]
+    call NumberToString
 
-		mov al, [Difficulty]
-		lea si, [DifficultyText]
-		call NumberToString
+    mov al, [Difficulty]
+    lea si, [DifficultyText]
+    call NumberToString
 
-		mov al, [Mistakes]
-		lea si, [MistakesText]
-		call NumberToString
+    mov al, [Mistakes]
+    lea si, [MistakesText]
+    call NumberToString
 
 ;--------=Change the difficuty text color by the level of difficulty
-		cmp [difficulty], 1
-		je @@Green
-		cmp [difficulty], 2
-		je @@Yellow
-		cmp [difficulty], 3
-		je @@Orange
-		cmp [difficulty], 4
-		je @@Red
+    cmp [difficulty], 1
+    je @@Green
+    cmp [difficulty], 2
+    je @@Yellow
+    cmp [difficulty], 3
+    je @@Orange
+    cmp [difficulty], 4
+    je @@Red
 
 @@Green:
-		mov bl, 47
-		jmp @@Continue
+    mov bl, 47
+    jmp @@Continue
 @@Yellow:
-		mov bl, 44
-		jmp @@Continue
+    mov bl, 44
+    jmp @@Continue
 @@Orange:
-		mov bl, 42
-		jmp @@Continue
+    mov bl, 42
+    jmp @@Continue
 @@Red:
-		mov bl, 40
+    mov bl, 40
 
 @@Continue:
 ;---------=Prep for int 10h 13h
-		mov ah,13h     ;Int requirement
-		mov bh,0       ;Page number
-		mov al, 0	     ;Mode
-		push ds		     ;ES as datasegment
-		pop es         ;ES:BP
+    mov ah,13h     ;Int requirement
+    mov bh,0       ;Page number
+    mov al, 0       ;Mode
+    push ds         ;ES as datasegment
+    pop es         ;ES:BP
 
 ;---------=Print which difficulty
-		mov cx, 1    ;Size of text
-		mov dl, 68    ;Column
-		mov dh, 12	   ;row
-		mov bp, offset DifficultyText  ;Title location
-		int 10h      ;Execute
+    mov cx, 1    ;Size of text
+    mov dl, 68    ;Column
+    mov dh, 12     ;row
+    mov bp, offset DifficultyText  ;Title location
+    int 10h      ;Execute
 
 ;---------=Print extra time
-		mov bl, 47
-		mov cx, 2    ;Size of text
-	  mov dl, 16    ;Column
-		mov dh, 9	   ;row
-		mov bp, offset TimeText  ;Title location
-		int 10h      ;Execute
+    mov bl, 47
+    mov cx, 2    ;Size of text
+    mov dl, 16    ;Column
+    mov dh, 9     ;row
+    mov bp, offset TimeText  ;Title location
+    int 10h      ;Execute
 
 ;---------=Print amount of words
-		mov cx, 2    ;Size of text
-		mov dl, 16    ;Column
-		mov dh, 12	   ;row
-		mov bp, offset WordsCountText  ;Title location
-		int 10h      ;Execute
+    mov cx, 2    ;Size of text
+    mov dl, 16    ;Column
+    mov dh, 12     ;row
+    mov bp, offset WordsCountText  ;Title location
+    int 10h      ;Execute
 
 ;---------=Print Amount of mistakes
-		mov cx, 2    ;Size of text
-		mov dl, 68    ;Column
-		mov dh, 9	   ;row
-		mov bp, offset MistakesText  ;Title location
-		int 10h      ;Execute
+    mov cx, 2    ;Size of text
+    mov dl, 68    ;Column
+    mov dh, 9     ;row
+    mov bp, offset MistakesText  ;Title location
+    int 10h      ;Execute
 
 ;---------=Print Score
-  	mov cx, 5    ;Size of text
-		mov dl, 20   ;Column
-		mov dh, 16	   ;row
-		mov bp, offset ScoreText  ;Title location
-		int 10h      ;Execute
+    mov cx, 5    ;Size of text
+    mov dl, 20   ;Column
+    mov dh, 16     ;row
+    mov bp, offset ScoreText  ;Title location
+    int 10h      ;Execute
 
-		call PressEnter
+    call PressEnter
 
-		call ResetValues
+    call ResetValues
 ;---------=Set text mode
-		mov ax, 3h   ;Int requirement
-		int 10h      ;Execute
+    mov ax, 3h   ;Int requirement
+    int 10h      ;Execute
 
 ;---------=Print the title and the options
-	  call PrintMenu
-		ret
+    call PrintMenu
+    ret
 ENDP WinScreen
 ;------------------------------
 ;FailScreen - Display the fail screen when the player failes
@@ -922,104 +921,104 @@ ENDP WinScreen
 ;Output:
 ;
 ;Registers:
-;					CX, SI, AX, BL, DS, ES, BP
+;          CX, SI, AX, BL, DS, ES, BP
 ;------------------------------
 PROC FailScreen
 ;--------=Prep for printing the story pcx
-		mov [StartX], 0  ;X location on the screen
-		mov [StartY], 0 ;Y location on the screen
+    mov [StartX], 0  ;X location on the screen
+    mov [StartY], 0 ;Y location on the screen
 
-		mov cx, 16 ;Loop value for replacing the FileName variable
-		mov si, 0 ;Reset si, used as pointer
+    mov cx, 16 ;Loop value for replacing the FileName variable
+    mov si, 0 ;Reset si, used as pointer
 @@Again:
 ;--------=Copy the file name from StoryText to FileName
-		mov ah, [File5 + si]
-		mov [FileName + si], ah
-		inc si
+    mov ah, [File5 + si]
+    mov [FileName + si], ah
+    inc si
 
-		loop @@Again
+    loop @@Again
 
-		call DrawPCX ;Draw the FailS.pcx file
+    call DrawPCX ;Draw the FailS.pcx file
 
-		mov ah, [Score]
-		sub [WordsCount], ah
-		call CalculateScore
+    mov ah, [Score]
+    sub [WordsCount], ah
+    call CalculateScore
 
-		call StopSpeaker
+    call StopSpeaker
 ;--------=Cast all of the variables to their ascii value
-	  xor ax, ax
-		mov ax, [FinalScore]
-		lea si, [ScoreText]
-		call NumberToString
+    xor ax, ax
+    mov ax, [FinalScore]
+    lea si, [ScoreText]
+    call NumberToString
 
-		xor ax, ax
-		mov al, [Difficulty]
-		lea si, [DifficultyText]
-		call NumberToString
+    xor ax, ax
+    mov al, [Difficulty]
+    lea si, [DifficultyText]
+    call NumberToString
 
-		mov al, [WordsCount]
-		lea si, [WordsCountText]
-		call NumberToString
+    mov al, [WordsCount]
+    lea si, [WordsCountText]
+    call NumberToString
 
 ;--------=Change the difficuty text color by the level of difficulty
-		cmp [difficulty], 1
-		je @@Green
-		cmp [difficulty], 2
-		je @@Yellow
-		cmp [difficulty], 3
-		je @@Orange
-		cmp [difficulty], 4
-		je @@Red
+    cmp [difficulty], 1
+    je @@Green
+    cmp [difficulty], 2
+    je @@Yellow
+    cmp [difficulty], 3
+    je @@Orange
+    cmp [difficulty], 4
+    je @@Red
 
 @@Green:
-		mov bl, 47
-		jmp @@Continue
+    mov bl, 47
+    jmp @@Continue
 @@Yellow:
-		mov bl, 44
-		jmp @@Continue
+    mov bl, 44
+    jmp @@Continue
 @@Orange:
-		mov bl, 42
-		jmp @@Continue
+    mov bl, 42
+    jmp @@Continue
 @@Red:
-		mov bl, 40
+    mov bl, 40
 
 @@Continue:
 ;---------=Prep for int 10h 13h
-		mov ah,13h     ;Int requirement
-		mov bh,0       ;Page number
-		mov al, 0	     ;Mode
-		push ds		     ;ES as datasegment
-		pop es         ;ES:BP
+    mov ah,13h     ;Int requirement
+    mov bh,0       ;Page number
+    mov al, 0       ;Mode
+    push ds         ;ES as datasegment
+    pop es         ;ES:BP
 
 ;---------=Print which difficulty
-		mov cx, 1    ;Size of text
-		mov dl, 69    ;Column
-		mov dh, 9	   ;row
-		mov bp, offset DifficultyText  ;Title location
-		int 10h      ;Execute
+    mov cx, 1    ;Size of text
+    mov dl, 69    ;Column
+    mov dh, 9     ;row
+    mov bp, offset DifficultyText  ;Title location
+    int 10h      ;Execute
 ;---------=Print amount of words
-		mov cx, 2    ;Size of text
-		mov dl, 16    ;Column
-		mov dh, 9	   ;row
-		mov bp, offset WordsCountText  ;Title location
-		int 10h      ;Execute
+    mov cx, 2    ;Size of text
+    mov dl, 16    ;Column
+    mov dh, 9     ;row
+    mov bp, offset WordsCountText  ;Title location
+    int 10h      ;Execute
 ;---------=Print Score
-		mov cx, 5    ;Size of text
-		mov dl, 20   ;Column
-		mov dh, 16	   ;row
-		mov bp, offset ScoreText  ;Title location
-		int 10h      ;Execute
+    mov cx, 5    ;Size of text
+    mov dl, 20   ;Column
+    mov dh, 16     ;row
+    mov bp, offset ScoreText  ;Title location
+    int 10h      ;Execute
 
-		call PressEnter
+    call PressEnter
 
-		call ResetValues
+    call ResetValues
 
 ;---------=Set text mode
-		mov ax, 3h   ;Int requirement
-		int 10h      ;Execute
+    mov ax, 3h   ;Int requirement
+    int 10h      ;Execute
 
 
-		call PrintMenu
+    call PrintMenu
 ENDP FailScreen
 ;------------------------------
 ;60SecScreen - Display the 60 seconds end screen
@@ -1029,66 +1028,66 @@ ENDP FailScreen
 ;Output:
 ;
 ;Registers:
-;							CX, SI, DS, ES, DX
+;              CX, SI, DS, ES, DX
 ;------------------------------
 PROC SixTeenSecScreen
 ;--------=Prep for printing the story pcx
-		mov [StartX], 0  ;X location on the screen
-		mov [StartY], 0 ;Y location on the screen
+    mov [StartX], 0  ;X location on the screen
+    mov [StartY], 0 ;Y location on the screen
 
-		mov cx, 16 ;Loop value for replacing the FileName variable
-		mov si, 0 ;Reset si, used as pointer
+    mov cx, 16 ;Loop value for replacing the FileName variable
+    mov si, 0 ;Reset si, used as pointer
 @@Again:
 ;--------=Copy the file name from StoryText to FileName
-		mov ah, [File6 + si]
-		mov [FileName + si], ah
-		inc si
+    mov ah, [File6 + si]
+    mov [FileName + si], ah
+    inc si
 
-		loop @@Again
+    loop @@Again
 
-		call DrawPCX ; Print the image
+    call DrawPCX ; Print the image
 
-		call StopSpeaker
+    call StopSpeaker
 
-		xor ax, ax
-		mov al, [Score]
-		lea si, [ScoreText]
-		call NumberToString
+    xor ax, ax
+    mov al, [Score]
+    lea si, [ScoreText]
+    call NumberToString
 
-		mov al, [Mistakes]
-		lea si, [MistakesText]
-		call NumberToString
+    mov al, [Mistakes]
+    lea si, [MistakesText]
+    call NumberToString
 
 ;---------=Prep for int 10h 13h
-		mov ah,13h     ;Int requirement
-		mov bh,0       ;Page number
-		mov al, 0	     ;Mode
-		push ds		     ;ES as datasegment
-		pop es         ;ES:BP
+    mov ah,13h     ;Int requirement
+    mov bh,0       ;Page number
+    mov al, 0       ;Mode
+    push ds         ;ES as datasegment
+    pop es         ;ES:BP
 ;---------=Print extra time
-		mov bl, 47
-		mov cx, 2    ;Size of text
-	  mov dl, 16    ;Column
-		mov dh, 9	   ;row
-		mov bp, offset ScoreText  ;Title location
-		int 10h      ;Execute
+    mov bl, 47
+    mov cx, 2    ;Size of text
+    mov dl, 16    ;Column
+    mov dh, 9     ;row
+    mov bp, offset ScoreText  ;Title location
+    int 10h      ;Execute
 ;---------=Print Amount of mistakes
-		mov cx, 2    ;Size of text
-		mov dl, 68    ;Column
-		mov dh, 9	   ;row
-		mov bp, offset MistakesText  ;Title location
-		int 10h      ;Execute
+    mov cx, 2    ;Size of text
+    mov dl, 68    ;Column
+    mov dh, 9     ;row
+    mov bp, offset MistakesText  ;Title location
+    int 10h      ;Execute
 
-		call PressEnter
+    call PressEnter
 
-		call ResetValues
+    call ResetValues
 ;---------=Set text mode
-		mov ax, 3h   ;Int requirement
-		int 10h      ;Execute
+    mov ax, 3h   ;Int requirement
+    int 10h      ;Execute
 
 ;---------=Print the title and the options
-		call PrintMenu
-		ret
+    call PrintMenu
+    ret
 ENDP SixTeenSecScreen
 ;------------------------------
 ;ResetValues - Reset the game scores and variables
@@ -1096,97 +1095,97 @@ ENDP SixTeenSecScreen
 ;Input:
 ;
 ;Output:
-;					[Mistakes] <- " " [Mistakes] <- " "
+;          [Mistakes] <- " " [Mistakes] <- " "
 ;Registers:
-;					SI
+;          SI
 ;------------------------------
 PROC ResetValues
 ;----------=Reset game values
-		mov [Mistakes], 0
-		mov [Score], 0
-		mov [FinalScore], 0
-		mov [Difficulty], 0
-		mov [GhostPointer], 65535
-		mov [FreqPointer], 0
-		mov [FreqDirection], 2
+    mov [Mistakes], 0
+    mov [Score], 0
+    mov [FinalScore], 0
+    mov [Difficulty], 0
+    mov [GhostPointer], 65535
+    mov [FreqPointer], 0
+    mov [FreqDirection], 2
 
 ;----------=Print spaces in all of the Variables
-		lea si, [ScoreTitle + 7]
-		mov [byte si], " "
-		inc si
-		mov [byte si], " "
+    lea si, [ScoreTitle + 7]
+    mov [byte si], " "
+    inc si
+    mov [byte si], " "
 
-		lea si, [ScoreText]
+    lea si, [ScoreText]
 @@AgainScore:
-		mov [byte si], " "
-		inc si
-		cmp si, offset ScoreText + 5
-		jne @@AgainScore
+    mov [byte si], " "
+    inc si
+    cmp si, offset ScoreText + 5
+    jne @@AgainScore
 
-		lea si, [TimeText]
+    lea si, [TimeText]
 @@AgainTime:
-		mov [byte si], " "
-		inc si
-		cmp si, offset TimeText + 2
-		jne @@AgainTime
+    mov [byte si], " "
+    inc si
+    cmp si, offset TimeText + 2
+    jne @@AgainTime
 
-		lea si, [WordsCountText]
+    lea si, [WordsCountText]
 @@AgainWordsCount:
-		mov [byte si], " "
-		inc si
-		cmp si, offset WordsCountText + 2
-		jne @@AgainWordsCount
+    mov [byte si], " "
+    inc si
+    cmp si, offset WordsCountText + 2
+    jne @@AgainWordsCount
 
-		lea si, [MistakesText]
+    lea si, [MistakesText]
 @@AgainMistake:
-		inc si
-		cmp si, offset MistakesText + 2
-		jne @@AgainMistake
+    inc si
+    cmp si, offset MistakesText + 2
+    jne @@AgainMistake
 
-		lea si, [DifficultyText]
+    lea si, [DifficultyText]
 @@AgainDifficulty:
-		inc si
-		cmp si, offset DifficultyText + 1
-		jne @@AgainDifficulty
+    inc si
+    cmp si, offset DifficultyText + 1
+    jne @@AgainDifficulty
 
-		ret
+    ret
 ENDP ResetValues
 ;------------------------------
 ;CalculateScore - Calculate the end score game
 ;------------------------------
 ;Input:
-;				[Difficulty], [Score], [Time]
+;        [Difficulty], [Score], [Time]
 ;Output:
-;				[FinalScore] <- The calculated score
+;        [FinalScore] <- The calculated score
 ;Registers:
-;				AX, BX, DX
+;        AX, BX, DX
 ;------------------------------
 ;Formula: Score * TimeLeft * Difficulty
 ;If each of them is zero it will be skiped
 PROC CalculateScore
-		mov ah, [Difficulty]
-		push ax
-		add ah, [Difficulty]
-		mov [Difficulty], ah
+    mov ah, [Difficulty]
+    push ax
+    add ah, [Difficulty]
+    mov [Difficulty], ah
 
-		;--------=Calculate Score
-		xor ax, ax
-		mov al, [Score]
-		mov [FinalScore], ax
-		mov al, [Time]
-		cmp al, 0
-		je @@TimeIsZero
-		mov bl, [Score]
-		mul bl
-		xor bx, bx
-		xor dx, dx
-		mov dl, [Difficulty]
-		mul	dx
-		mov [FinalScore], ax
+;-----------=Calculate Score
+    xor ax, ax
+    mov al, [Score]
+    mov [FinalScore], ax
+    mov al, [Time]
+    cmp al, 0
+    je @@TimeIsZero
+    mov bl, [Score]
+    mul bl
+    xor bx, bx
+    xor dx, dx
+    mov dl, [Difficulty]
+    mul  dx
+    mov [FinalScore], ax
 @@TimeIsZero:
-		pop ax
-		mov [Difficulty], ah
-		ret
+    pop ax
+    mov [Difficulty], ah
+    ret
 ENDP CalculateScore
 ;------------------------------
 ;PlaySpeaker - Start the speaker, and play a sound from the sound spectrum [Frequencies]
@@ -1196,45 +1195,45 @@ ENDP CalculateScore
 ;Output:
 ;
 ;Registers:
-;				BX,AX
+;        BX,AX
 ;------------------------------
 PROC PlaySpeaker
-		pusha
+    pusha
 
-		xor bx, bx
+    xor bx, bx
 ;-------------= Prepare the speaker for a note
-		mov al, 182
-		out 43h, al
+    mov al, 182
+    out 43h, al
 ;-------------= Get a note from our spectrum
-		mov si, [FreqPointer]
-		mov ax, [Frequencies + si]
+    mov si, [FreqPointer]
+    mov ax, [Frequencies + si]
 
-		cmp ax, SPEC_START ; Check if we at the start of the spectrum
-		jne @@Continue
-		mov [FreqDirection], 2 ; If so, move forward
-		jmp @@End
+    cmp ax, SPEC_START ; Check if we at the start of the spectrum
+    jne @@Continue
+    mov [FreqDirection], 2 ; If so, move forward
+    jmp @@End
 @@Continue:
-		cmp ax, SPEC_END ; Check if we at the end of the spectrum
-		jne @@End
-		mov [FreqDirection], -2 ; If so, move backwards
+    cmp ax, SPEC_END ; Check if we at the end of the spectrum
+    jne @@End
+    mov [FreqDirection], -2 ; If so, move backwards
 @@End:
 ;-------------= Set the [FreqPointer] for next use
-		mov bl, [FreqDirection]
-		cmp bl, 2
-		jne @@Sub
-		add [FreqPointer], 2
-		jmp @@Play
+    mov bl, [FreqDirection]
+    cmp bl, 2
+    jne @@Sub
+    add [FreqPointer], 2
+    jmp @@Play
 @@Sub:
-		sub [FreqPointer], 2
+    sub [FreqPointer], 2
 @@Play:
 ;-------------= Send the sound to the speakers
-		out 42h, al
-		mov al, ah
-		out 42h, al
+    out 42h, al
+    mov al, ah
+    out 42h, al
 
-		popa
+    popa
 
-		ret
+    ret
 ENDP PlaySpeaker
 ;------------------------------
 ;StopSpeaker - Stop the speaker from playing
@@ -1244,15 +1243,15 @@ ENDP PlaySpeaker
 ;Output:
 ;
 ;Registers:
-;				AX
+;        AX
 ;------------------------------
 PROC StopSpeaker
-		pusha
-		xor ax, ax
-;-------------= Set the last 2 bytes to 0 to stop the speaker
-		in  al, 61h
-		and al, 11111100b   ; Reset bits 1 and 0.
-		out 61h, al         ; Send new value.
-		popa
-		ret
+    pusha
+    xor ax, ax
+;--------------= Turn off speaker
+    in  al, 61h ; Get value from speaker
+    and al, 11111100b   ; Change the last 2 bytes to 0 to stop the speaker
+    out 61h, al         ; Send new value.
+    popa
+    ret
 ENDP StopSpeaker
